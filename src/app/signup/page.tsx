@@ -1,230 +1,187 @@
 "use client";
+
 import axios from "axios";
-import { ChangeEvent, useEffect, useState } from "react";
-// import React from "react";
+import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import Modal from "@/components/Model/Model";
-import process from "process"
+import { api } from "@/lib/api";
 
-export default function Signup():any {
-    const baseUrl:string = `${process.env.NEXT_PUBLIC_BASE_URL}`;
-    const router = useRouter();
-    const [formData, updateFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        id: "",
-        role: "student",
-        areTermsAgreed: false
-    });
-    const [showModal, updateShowModal] = useState(false);
-    const [wasPostSuccessful, updateWasPostSuccessful] = useState(false);
+const getEmailVerificationLink = async (email: string) => {
+  const res = await api.post("/auth/register?email=${email}", {public: true});
 
-    // const [isFormReady, updateIsFormReady] = useState(false);
-
-    const [emailErrorState, updateEmailErrorState] = useState(true);
-    const [idErrorState, updateIdErrorState] = useState(true);
-    const [passwordErrorState, updatePasswordErrorState] = useState(true);
-    const [errorState, updateErrorState] = useState(emailErrorState || passwordErrorState);
-    const [errorMessage, updateErrorMessage] = useState("");
-    const [loading, updateLoading] = useState(false);
-
-    const Spinner = (    
-        <div role="status">
-            <svg aria-hidden="true" className="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-            </svg>
-            <span className="sr-only">Loading...</span>
-        </div>
-    )
-
-    useEffect(() => {
-        // On page load/component mount, clear all form inputs 
-        updateFormData({
-            name: "",
-            email: "",
-            password: "",
-            id: "",
-            role: "student",
-            areTermsAgreed: false
-        });
-        updateErrorState(true);
-        updateErrorMessage("");
-        updateShowModal(false);
-        updateWasPostSuccessful(false);
-        updateLoading(false);
-
-        // Check if token is ready and move to respective dashboards
-    }, [])
-
-    useEffect(() => {
-        const admin_token = localStorage.getItem("token");
-        const student_token = localStorage.getItem("student_token");
-
-        if (admin_token || student_token) router.replace(`${admin_token? "/dashboard/admin": "/dashboard/student"}`);
-    });
-
-    const sendFormData = async () => {
-        try {
-            const response = await axios.post(`${baseUrl}/user/create_user`, 
-                {
-                    user_matric: formData.id,
-                    username: formData.name,
-                    password: formData.password,
-                    role: formData.role,
-                    email: formData.email,
-                },
-                {
-                    withCredentials: true,
-                    headers: {
-                        "Content-Type": "application/json",
-                        "x-api-key": process.env.NEXT_PUBLIC_API_KEY,
-                    },
-                }
-            );
-            console.log(response);
-
-            updateShowModal(true);
-            updateWasPostSuccessful(true);
-            updateLoading(false);
-            updateErrorMessage("");
-        } catch (error: unknown) {
-            console.log(error);
-            updateShowModal(true);
-            updateWasPostSuccessful(false);
-            if (typeof (error as any).response?.data?.detail === "string") updateErrorMessage((error as any).response.data.detail);
-            updateLoading(false);
-        }
-    };
-
-        
-    const submitHandler = (e:SubmitEvent) => {
-        e.preventDefault();
-        updateLoading(true);
-        // console.log("Form Submitted", formData);
-        sendFormData();
+    if (res.error) {
+      throw new Error(res.error || "Failed to get verification link");
     }
 
-    const handleEmailError = (e: ChangeEvent<HTMLInputElement>) => {
-        if ((e.target as any).value === "") {
-            updateEmailErrorState(true);
-        } else {
-            updateEmailErrorState(false);
-        }
+    return
+  }
 
-        updateErrorState(emailErrorState && passwordErrorState)
+const isValidEmail = (email: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+export default function InitialRegisterPage() {
+  const [email, setEmail] = useState("");
+  const [touched, setTouched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const emailIsValid = isValidEmail(email);
+  const showEmailError = touched && email !== "" && !emailIsValid;
+
+  const handleSubmit = async () => {
+    if (!emailIsValid || loading) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      await getEmailVerificationLink(email);
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    
-    const handleIdError = (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target?.value === "") {
-            updateErrorState(true);
-        } else {
-            updateIdErrorState(false);
-        }
+  };
 
-        updateErrorState(idErrorState && passwordErrorState)
-    }
-
-    const handleConfirmPassword = (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.value !== formData.password) {
-            updatePasswordErrorState(true);
-        } else if (e.target.value == "") {
-            updatePasswordErrorState(true);
-        } else {
-            updatePasswordErrorState(false);
-        }
-        
-        updateErrorState(emailErrorState && passwordErrorState)
-    }
-
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        event.persist();
-        const { name, value, type, checked } = event.target;
-
-        // Take previous state and update only the input field changed.
-        updateFormData(prevState => ({
-            ...prevState,
-            [name]: type === "checkbox"? checked: value
-        }));
-    }
-     
+  if (success) {
     return (
-        <div id="signup" className="w-full bg-white p-4 py-8 md:flex md:flex-col md:justify-center md:px-60 md:pb-16 dark:bg-gray-900 dark:text-gray-400">
-            <Modal show={showModal} modalClosed = {() => updateShowModal(false)}>
-                <div className="text-red h-[60vh] my-4 gap-5 mx-2 flex flex-col items-center">
-                    <Image src={wasPostSuccessful? "/success.svg" :"/warning.svg"} className="mx-auto mt-5" width={50} height={50} alt="error-icon"/>
-
-                    {wasPostSuccessful? 
-                        <h1 className="font-extrabold text-lg text-center"> Congratulations, <br />You registered successfully!</h1>
-                        : <h1 className="font-extrabold text-lg text-center"> Unfortunately, <br />There was an Error!</h1>
-                    }
-
-                    {wasPostSuccessful? "" :<p className="text-xs">Consider the error message below</p>}
-
-                    {wasPostSuccessful? 
-                        ""
-                        :<h3 className={`pt-4 font-bold text-red-600 text-center`}>{errorMessage != ""? errorMessage: "Kindly check your network connection"}</h3>
-                    }
-
-                    {wasPostSuccessful?     
-                        <button className="py-2 px-4 w-full border rounded mt-auto cursor-pointer
-                        transition duration-300 ease-out hover:border-green-600 hover:text-green-600" 
-                        onClick={() => {
-                            // restore defaults
-                            updateShowModal(false); 
-                            updateWasPostSuccessful(false);
-                            
-                            //  Redirect user to the log in page
-                            router.push(`/#login`);
-                        }}>Proceed to login.</button>
-                        : <button className="py-2 px-4 w-full border rounded mt-auto cursor-pointer
-                        transition duration-300 ease-out hover:text-red-600 hover:border-red-600" 
-                        onClick={() => {updateShowModal(false); updateWasPostSuccessful(false)}}>Close</button>
-                    }
-                </div>
-            </Modal>
-
-            <div id="head" className="my-8">
-                <h1 className="my-2 text-3xl md:text-center dark:text-gray-200">Sign Up with AVE.</h1>
-                <h1 className="text-purple-600 md:text-center">
-                    Input your details <span className="hidden sm:inline">||</span><br className="sm:hidden"/> Create an admin / student account.
-                </h1>
-            </div>
-            
-            <form action="#" className="flex flex-col justify-around" onSubmit={(e: any) => submitHandler(e)}>
-                <input type="name" name="name" className="input" onChange = {(e: ChangeEvent<HTMLInputElement>) => {handleChange(e);}} placeholder={`Enter your full name`} />
-                <input type="email" name="email" className="input" onChange = {(e: ChangeEvent<HTMLInputElement>) => {handleChange(e); handleEmailError(e)}} placeholder={`Enter your email`} />
-                <input type="text" name="id" className="input" onChange = {(e: ChangeEvent<HTMLInputElement>) => {handleChange(e); handleIdError(e)}} placeholder={`Enter your ID/Matric number`} />
-                <input type="password" name="password" onChange = {(e: ChangeEvent<HTMLInputElement>) => {handleChange(e); handleConfirmPassword(e)}} className="input" placeholder="Enter Password" />
-                <input type="password" className="input" onChange = {(e: ChangeEvent<HTMLInputElement>) => handleConfirmPassword(e)} placeholder="Confirm Password" />
-
-                {
-                    passwordErrorState ? <p className="text-red-700 text-sm dark:font-extrabold">Passwords do not match.</p>
-                                : <p className="text-green-700 text-sm dark:font-extrabold">Passwords match, continue ..</p>
-                } 
-
-                <select name="role" defaultValue={"student"} onChange = {(e: ChangeEvent<any>) => handleChange(e)} id="role" className="input text-gray-400">
-                    <option value="student">Student</option>
-                    <option value="admin">Lecturer (admin)</option>
-                </select>
-
-                <div id="terms_and_services" className="flex gap-2 items-baseline">
-                    <input type="checkbox" onChange={(e) => {handleChange(e)}} name="areTermsAgreed" />
-                    <span> I agree to the <Link href={"#"} className="font-light underline">terms and Conditions.</Link></span>
-                </div>
-                
-                <button type="submit" className={`${formData.areTermsAgreed && !errorState? "opacity-100": "opacity-60"} my-4 p-2 w-full bg-purple-600 rounded text-white transition duration-300 ease-out hover:shadow-lg dark:bg-purple-700 dark:hover:bg-purple-800`} 
-                disabled={!(formData.areTermsAgreed && !errorState)}>
-                    {loading ? Spinner: "Submit"}
-                </button>
-                
-                {errorState? <p className="text-md text-red-700 dark:font-extrabold">Please fill all form fields.</p>: ""}
-            </form>
-
-            <p className="my-2 text-md">Already have an account? <Link href={"/#login"} className="font-light underline">   Log In</Link></p>
+      <div className="min-h-screen w-full bg-white dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-md flex flex-col items-center gap-4 text-center">
+          <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+            <svg
+              className="w-7 h-7 text-purple-700 dark:text-purple-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            Check your inbox
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            We sent a verification link to{" "}
+            <span className="font-medium text-purple-700 dark:text-purple-400">
+              {email}
+            </span>
+            . Click it to continue registration.
+          </p>
+          <button
+            onClick={() => {
+              setSuccess(false);
+              setEmail("");
+            }}
+            className="text-sm text-purple-700 dark:text-purple-400 underline underline-offset-2 mt-2"
+          >
+            Use a different email
+          </button>
         </div>
-    )
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen w-full bg-white dark:bg-gray-900 md:flex md:flex-col md:justify-center md:items-center p-4 py-8 md:px-60 md:pb-16 dark:text-gray-400">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="my-8">
+          <h1 className="my-2 text-3xl md:text-center dark:text-gray-200">
+            Sign Up with AVE.
+          </h1>
+          <p className="text-purple-600 md:text-center text-sm">
+            Enter your email to get started.
+          </p>
+        </div>
+
+        {/* Form */}
+        <div className="flex flex-col gap-4">
+          {/* Email field */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Email address
+            </label>
+            <input
+              type="email"
+              value={email}
+              placeholder="you@example.com"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
+              onBlur={() => setTouched(true)}
+              className={`border-2 rounded-lg h-10 p-2 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 outline-none transition-colors
+                ${
+                  showEmailError || error
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-purple-900 focus:border-purple-600"
+                }`}
+            />
+            {showEmailError && (
+              <p className="text-xs text-red-600 dark:font-extrabold">
+                Please enter a valid email address.
+              </p>
+            )}
+            {error && (
+              <p className="text-xs text-red-600 dark:font-extrabold">
+                {error}
+              </p>
+            )}
+          </div>
+
+          {/* Submit button */}
+          <button
+            onClick={handleSubmit}
+            disabled={!emailIsValid || loading}
+            className={`my-2 p-2 w-full bg-purple-600 rounded text-white text-sm font-medium transition duration-300 ease-out hover:shadow-lg dark:bg-purple-700 dark:hover:bg-purple-800 flex items-center justify-center gap-2
+              ${!emailIsValid || loading ? "opacity-60 cursor-not-allowed" : "opacity-100"}`}
+          >
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                Sending...
+              </>
+            ) : (
+              "Send verification link"
+            )}
+          </button>
+
+          <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+            Already have an account?{" "}
+            <Link
+              href="/#login"
+              className="text-purple-600 font-medium underline underline-offset-2 hover:text-purple-800"
+            >
+              Log in
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }

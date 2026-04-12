@@ -1,6 +1,6 @@
 "use client";
 import React, {useState, useRef, FormEvent} from 'react';
-import axios from 'axios';
+import api from "@/lib/api";
 import OpenModal from '@/components/OpenModal/OpenModal';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -41,15 +41,14 @@ const Page = () => {
         updateLoading(true);
         // make forgot password request
         try {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/user/forgot_password`, {}, {
-                withCredentials: true,
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                params: {
-                    "student_email": emailInput
-                }
-            });
+            const response = await api.post("/user/forgot_password", {}, {
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              params: {
+                  "student_email": emailInput
+              }
+          });
 
             console.log(response);
             updateShowSuccessModal(true);

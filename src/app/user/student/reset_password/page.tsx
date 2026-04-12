@@ -4,12 +4,11 @@ import { useSearchParams } from 'next/navigation';
 import OpenModal from '@/components/OpenModal/OpenModal';
 import Image from 'next/image';
 import { FormEvent } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import api from "@/lib/api";
 
 const Page = () => {
     let token:string;
-    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}`;
     const searchParams = useSearchParams();
     const router = useRouter();
     const [showSuccessModal, updateShowSuccessModal] = useState(false);
@@ -49,8 +48,7 @@ const Spinner = (
         
         // call the reset password endpoint
         try {
-            const response = await axios.post(`${baseUrl}/user/reset_password`, {}, {
-                withCredentials: true,
+            const response = await api.post("/user/reset_password", {}, {
                 headers: {
                     "Content-Type": "application/json"
                 },
