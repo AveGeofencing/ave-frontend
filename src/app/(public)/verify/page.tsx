@@ -1,31 +1,40 @@
 "use client";
-import React, { ChangeEvent, useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
+import { api } from "@/lib/api";
 
-const verifyToken = async (token: string) => {
-  const res = await axios.post(
-    `http://localhost:8000/auth/verify-email?token=${token}`,
-  );
+interface VerifyResponse {
+  user_email: string;
+  user_id: string;
+}
+
+interface RegisterData {
+  user_id: string;
+  email: string;
+  username: string;
+  user_matric: string;
+  password: string;
+  role: "student";
+}
+
+const submitDetails = async (data: RegisterData) => {
+  const res = await api.post(`/auth/create-user`, data);
   return res.data;
 };
 
-const submitDetails = async (data: any) => {
-  const res = await axios.post(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/create-user`,
-    data,
-  );
-  return res.data;
-};
-
-const Page = () => {
+function VerifyPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const token = searchParams.get("token") || "";
-  const [isTokenVerified, setIsTokenVerified] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-  const [data, setData] = useState({
+  const [isTokenVerified, setIsTokenVerified] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [verificationStatus, updateVerificationStatus] = useState<
+    "success" | "idle" | "error"
+  >("idle");
+  const [data, setData] = useState<RegisterData>({
     user_id: "",
     email: "",
     username: "",
@@ -39,46 +48,42 @@ const Page = () => {
     data.user_matric.trim() !== "" &&
     data.password.trim() !== "";
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [verificationStatus, updateVerificationStatus] = useState<
-    "success" | "idle" | "error"
-  >("idle");
+  async function handleVerification(token: string) {
+    updateVerificationStatus("idle");
+    setLoading(true);
+    try {
+      const res = await api.post<VerifyResponse>(
+        `/auth/verify-email?token=${token}`,
+        undefined,
+        { public: true },
+      );
 
-  useEffect(() => {
-    if (!token) {
-      updateVerificationStatus("error");
-      return;
-    }
-
-    async function handleVerification() {
-      updateVerificationStatus("idle");
-      setLoading(true);
-
-      try {
-        const data = await verifyToken(token);
-        setData((prev) => ({
-          ...prev,
-          email: data.user_email,
-          user_id: data.user_id,
-        }));
-        setIsTokenVerified(true);
-        updateVerificationStatus("success");
-      } catch (error) {
+      if (!res.data) {
         setIsTokenVerified(false);
         updateVerificationStatus("error");
-      } finally {
-        setLoading(false);
+        return;
       }
-    }
 
-    handleVerification();
-  }, [token]);
+      setData((prev) => ({
+        ...prev,
+        email: res.data!.user_email,
+        user_id: res.data!.user_id,
+      }));
+      setIsTokenVerified(true);
+      updateVerificationStatus("success");
+    } catch (err) {
+      setIsTokenVerified(false);
+      updateVerificationStatus("error");
+    } finally {
+      setLoading(false); // ← always runs
+    }
+  }
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const res = await submitDetails(data);
-      router.push("/");
+      await submitDetails(data);
+      router.push("/login");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         switch (error.response?.status) {
@@ -97,6 +102,17 @@ const Page = () => {
     }
   };
 
+  // -----------Use Effect------------------------------------------------------------------------------
+  useEffect(() => {
+    if (!token) {
+      console.log("No token found in URL parameters.");
+      updateVerificationStatus("error");
+      return;
+    }
+
+    handleVerification(token);
+  }, [token]);
+
   return (
     <div
       id="email-verification-page"
@@ -107,7 +123,6 @@ const Page = () => {
         className="flex flex-col items-center md:border md:rounded md:shadow-inner md:p-8 md:w-fit"
       >
         <div className="rounded-full p-4 bg-purple-100 block w-fit dark:bg-purple-800">
-          {/* mail icon */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -146,10 +161,7 @@ const Page = () => {
                 placeholder="Matric Number"
                 value={data.user_matric}
                 onChange={(e) =>
-                  setData((prev) => ({
-                    ...prev,
-                    user_matric: e.target.value,
-                  }))
+                  setData((prev) => ({ ...prev, user_matric: e.target.value }))
                 }
               />
               <input
@@ -163,28 +175,25 @@ const Page = () => {
               />
             </div>
           )}
-          {!loading && verificationStatus !== "idle" ? ( // check if a response has returned
-            verificationStatus == "error" ? (
+          {!loading &&
+            verificationStatus !== "idle" &&
+            (verificationStatus === "error" ? (
               <p className="text-red-500 font-semibold text-center py-4 pt-6">
                 This link could not be verified. It is either expired or
                 invalid.
-              </p> // based on response success or error
+              </p>
             ) : (
               <p className="text-green-500 font-bold text-center py-4 pt-6">
                 Your email has been successfully verified.
               </p>
-            )
-          ) : (
-            ""
-          )}
+            ))}
           {error && <p className="text-red-500 text-sm">{error}</p>}
-
           {isTokenVerified && (
             <button
               className="py-3 px-4 w-full text-center font-bold bg-purple-500 cursor-pointer text-white rounded-lg my-4 disabled:opacity-50 dark:bg-purple-700 dark:text-gray-300"
               disabled={!isFormValid || loading}
               onClick={(e) => {
-                e.preventDefault(); // ✅ actually call it
+                e.preventDefault();
                 handleSubmit();
               }}
             >
@@ -195,6 +204,14 @@ const Page = () => {
       </div>
     </div>
   );
-};
+}
 
-export default Page;
+// useSearchParams() requires a Suspense boundary somewhere in the tree —
+// wrapping here keeps everything in one file
+export default function Page() {
+  return (
+    <Suspense>
+      <VerifyPage />
+    </Suspense>
+  );
+}

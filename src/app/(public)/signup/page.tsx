@@ -1,19 +1,18 @@
 "use client";
 
-import axios from "axios";
 import { useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 
 const getEmailVerificationLink = async (email: string) => {
-  const res = await api.post("/auth/register?email=${email}", {public: true});
+  const res = await api.post(`/auth/register?email=${email}`, { public: true });
 
-    if (res.error) {
-      throw new Error(res.error || "Failed to get verification link");
-    }
-
-    return
+  if (res.error) {
+    throw new Error(res.error || "Failed to get verification link");
   }
+
+  return;
+};
 
 const isValidEmail = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

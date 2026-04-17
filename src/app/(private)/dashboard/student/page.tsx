@@ -130,18 +130,20 @@ const Page = () => {
     setAttendanceBeingRecorded(false);
 
     if (response.status !== 200) {
-      updateConfirmationError({
-        state: true,
-        message:
-          response.error || "An error occurred while recording attendance.",
-      });
+      showToast(
+        response.error || "An error occurred while recording attendance.",
+      );
+      return;
     }
 
-    showToast(
-      response.status === 200
-        ? "Attendance recorded successfully!"
-        : response.error || "An error occurred while recording attendance.",
-    );
+    if (response.status === 200) {
+      showToast("Attendance recorded successfully!");
+      updateSelectedGeofenceData({
+        ...selectedGeofenceData,
+        has_registered: true,
+      });
+      return;
+    }
   }
 
   const handleGeofenceClicked = (geofence: Geofence) => {

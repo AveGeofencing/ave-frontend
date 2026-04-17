@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     // In order to create a static site
-    output: "export",
+    // output: "export",
     reactStrictMode: true,
     images: {
         unoptimized: true

@@ -11,11 +11,12 @@ import GeofenceCard from "@/components/Geofence/geofence";
 import { useAuth } from "@/context/AuthContext";
 
 interface APIResponse {
+  id: string;
   code: string;
   name: string;
 }
 
-function Admin_dashboard() {
+export default function Admin_dashboard() {
   const [classStarted, updateClassStarted] = useState(false);
   const [geofencesByThisAdmin, updateGeofencesByThisAdmin] = useState<
     AdminGeofence[]
@@ -128,11 +129,11 @@ function Admin_dashboard() {
     }
 
     updateClassStartedLoading(false);
-    router.push("/dashboard/admin/class");
+    router.push(`/dashboard/admin/class/${response.data.id}`);
   };
 
   async function classRecordClicked(geofence: AdminGeofence) {
-    router.push(`/dashboard/admin/class?id=${geofence.id}`);
+    router.push(`/dashboard/admin/class/${geofence.id}`);
   }
 
   useEffect(() => {
@@ -305,5 +306,3 @@ function Admin_dashboard() {
     </main>
   );
 }
-
-export default Admin_dashboard;

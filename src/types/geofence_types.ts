@@ -31,5 +31,5 @@ interface AdminGeofenceResponse {
 interface AttendanceRecord {
   user_matric: string;
   username: string;
-  fence_code: string;
+  timestamp: string;
 }

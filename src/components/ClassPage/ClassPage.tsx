@@ -1,49 +1,46 @@
 "use client";
 
-import React from "react";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 import Spinner from "@/components/Spinner/Spinner";
 
-const Page = () => {
-  const [classData, updateClassData] = useState<AdminGeofence>();
+const downloadCSV = (classData: AdminGeofence | null) => {
+  const table: any = document.getElementById("classAttendanceTable");
+  if (!table) return;
+
+  const rows = table.querySelectorAll("tr");
+  let csvContent = "";
+
+  rows.forEach((row: any) => {
+    const cells = row.querySelectorAll("th, td");
+    const rowContent = Array.from(cells)
+      .map((cell: any) => `"${cell.innerText}"`)
+      .join(",");
+    csvContent += rowContent + "\n";
+  });
+
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${classData?.name ?? "attendance"}-attendance.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
+export default function ClassPage({ fenceId }: { fenceId: string }) {
+  const [classData, updateClassData] = useState<AdminGeofence | null>(null);
   const [attendanceList, updateAttendanceList] = useState<AttendanceRecord[]>(
     [],
   );
   const [refreshListLoading, updateRefreshListLoading] = useState(false);
   const [endClassLoading, updateEndClassLoading] = useState(false);
-  const searchParams = useSearchParams();
-  const fenceId = searchParams.get("id"); //
+
   const { showToast } = useToast();
-
-  // Div reference showing no attendance records.
-  const divRef: any = useRef();
-
-  const downloadCSV = () => {
-    const table: any = document.getElementById("classAttendanceTable");
-    const rows = table.querySelectorAll("tr");
-    let csvContent = "";
-
-    rows.forEach((row: any) => {
-      const cells = row.querySelectorAll("th, td");
-      const rowContent = Array.from(cells)
-        .map((cell: any) => `"${cell.innerText}"`)
-        .join(",");
-      csvContent += rowContent + "\n";
-    });
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${classData.name}-attendance.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
+  const divRef = useRef<HTMLDivElement | null>(null);
 
   const getGeofence = async () => {
     const response = await api.get<AdminGeofence>(`/geofence/${fenceId}`);
@@ -54,59 +51,47 @@ const Page = () => {
     }
 
     updateClassData(response.data);
-    return;
   };
 
   const getAttendanceHandler = async () => {
     updateRefreshListLoading(true);
+
     const response = await api.get<AttendanceRecord[]>(
       `/geofence/get_attendances?fence_id=${fenceId}`,
-      {},
     );
 
     if (!response.data) {
+      showToast("Error fetching attendance records.", true);
       updateRefreshListLoading(false);
-      showToast("Error fetching attendance records. Please try again.", true);
       return;
     }
 
-    if (!response.data || response.data.length === 0) {
-      updateRefreshListLoading(false);
+    if (response.data.length === 0) {
       showToast("No attendance records found.");
-      return;
-    }
-
-    if (
-      response.data &&
-      Array.isArray(response.data) &&
-      response.data.length > 0
-    ) {
-      updateAttendanceList(response.data);
+      updateAttendanceList([]);
       updateRefreshListLoading(false);
       return;
     }
 
+    updateAttendanceList(response.data);
     updateRefreshListLoading(false);
-    return;
   };
 
   const endClassHandler = async () => {
     updateEndClassLoading(true);
-    // send put rquest to deativate geofence
+
     const response = await api.put(
       `/geofence/deactivate?geofence_id=${fenceId}`,
-      {},
     );
 
     if (response.error) {
+      showToast("Error ending class.", true);
       updateEndClassLoading(false);
-      showToast("Error ending class. Please try again.", true);
       return;
     }
 
-    getGeofence();
+    await getGeofence();
     updateEndClassLoading(false);
-    // Show alert component
     showToast("Class ended.");
   };
 
@@ -115,21 +100,24 @@ const Page = () => {
       await getGeofence();
       await getAttendanceHandler();
     };
-    init();
-  }, []);
 
-  if (!classData)
+    init();
+  }, [fenceId]);
+
+  if (!classData) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         {Spinner}
       </div>
     );
+  }
 
   return (
     <div className="flex px-6 pt-20 flex-col gap-4 min-h-screen dark:bg-gray-900 dark:text-gray-400">
       <h1 className="text-4xl font-extrabold text-center dark:text-gray-300">
         {classData.name}
       </h1>
+
       <h2 className="text-xl text-gray-500 text-center">
         Your class code is{" "}
         <span className="font-bold">{classData.fence_code}</span>
@@ -142,18 +130,18 @@ const Page = () => {
       <div id="classAttendance">
         <button
           onClick={getAttendanceHandler}
-          className="py-2 px-6 w-full text white border border-white my-3 rounded text-white bg-purple-500
-                transition ease-out duration-300 hover:bg-purple-800 dark:bg-purple-700 dark:hover:bg-purple-800 dark:text-gray-200 dark:border-gray-400"
+          className="py-2 px-6 w-full border border-white my-3 rounded text-white bg-purple-500
+          transition ease-out duration-300 hover:bg-purple-800 dark:bg-purple-700 dark:hover:bg-purple-800 dark:text-gray-200 dark:border-gray-400"
         >
           Refresh List
         </button>
-        {/* Manual de-activate geofence */}
+
         <div className="flex justify-between">
           <button
             onClick={endClassHandler}
-            className="py-2 px-6 w-[90%] border border-purple-500 my-3 text-red bg-white transition ease-out duration-300 hover:bg-red-600
-                        hover:text-white disabled:bg-red-500 disabled:opacity-75 disabled:text-white dark:bg-red-600 dark:text-gray-100 dark:hover:bg-red-700 dark:hover:text-white"
-            disabled={!(classData.status === "active")}
+            className="py-2 px-6 w-[90%] border border-purple-500 my-3 bg-white transition ease-out duration-300 hover:bg-red-600
+            hover:text-white disabled:bg-red-500 disabled:opacity-75 disabled:text-white dark:bg-red-600 dark:text-gray-100 dark:hover:bg-red-700"
+            disabled={classData.status !== "active"}
           >
             {endClassLoading
               ? Spinner
@@ -161,12 +149,12 @@ const Page = () => {
                 ? "End Class"
                 : "Class is inactive"}
           </button>
+
           <button
             className="px-4 border border-purple-500 scale-[65%]"
             title="Download Attendance"
-            onClick={downloadCSV}
+            onClick={() => downloadCSV(classData)}
           >
-            {/* Icon for lightmode */}
             <Image
               src="/download-svg.svg"
               className="dark:hidden"
@@ -175,7 +163,6 @@ const Page = () => {
               alt="Download Image"
             />
 
-            {/* Icon for darkmode */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="hidden size-8 dark:inline-block"
@@ -216,10 +203,10 @@ const Page = () => {
                 <th className="border px-4 py-2">Timestamp</th>
               </tr>
             </thead>
+
             <tbody>
-              {/* only render if attendance list comes back as an array and is not empty */}
-              {Array.isArray(attendanceList) && attendanceList.length !== 0 ? (
-                attendanceList.map((student: any, index) => (
+              {attendanceList.length > 0 ? (
+                attendanceList.map((student, index) => (
                   <tr key={index}>
                     <td className="border px-4 py-2">{index + 1}</td>
                     <td className="border px-4 py-2">{student.username}</td>
@@ -228,7 +215,11 @@ const Page = () => {
                   </tr>
                 ))
               ) : (
-                <tr></tr>
+                <tr>
+                  <td colSpan={4} className="text-center py-4 text-gray-500">
+                    No attendance records
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -236,6 +227,4 @@ const Page = () => {
       </div>
     </div>
   );
-};
-
-export default Page;
+}

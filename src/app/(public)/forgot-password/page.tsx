@@ -1,23 +1,19 @@
 "use client";
-import React, {useState, useEffect, useRef, Suspense} from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, {useState, useRef, FormEvent} from 'react';
+import {api} from "@/lib/api";
 import OpenModal from '@/components/OpenModal/OpenModal';
 import Image from 'next/image';
-import { FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import api from "@/lib/api";
 
 const Page = () => {
-    let token:string;
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const [showSuccessModal, updateShowSuccessModal] = useState(false);
-    const [loading, updateLaoding] = useState(false);
+    const [loading, updateLoading] = useState(false);
     const [error, updateError] = useState({state: false, message: ""});
+    const [showSuccessModal, updateShowSuccessModal] = useState(false);
 
-    const passwordRef = useRef<HTMLInputElement>(null);
+    const router = useRouter();
 
-const Spinner = (    
+    const emailInputRef = useRef<HTMLInputElement>(null);
+    const Spinner = (    
         <div role="status">
             <svg aria-hidden="true" className="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
@@ -25,45 +21,37 @@ const Spinner = (
             </svg>
             <span className="sr-only">Loading...</span>
         </div>
-    );
-    
-    useEffect(() => {
-        // Get token from URL Parameters
-        const search = searchParams.get("token");
-        token = (search as string);
-    });
+    )
 
-    const handleResetPassword = async (e:FormEvent) => {
-        // get password value
-        const password = (passwordRef.current as HTMLInputElement).value;
-        console.log(password, token);
+    const handleForgotPassword = async (e:FormEvent) => {
+        e.preventDefault();
+        const emailInput: string = (emailInputRef.current as HTMLInputElement).value;
+        const regex = /^[a-zA-Z0-9]+([.-_][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([-.][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/; // Email Regex
 
-        if (password === "" && password.length < 5) {
-            updateError({state: true, message: "Password must be at least 5 characters"});
-            return;
-        } 
+        // make sure email input is present
+        if (emailInput == "" || !emailInput.match(regex)) {
+            // update error message and cancel request
+            updateError({state: true, message: "Please write out a valid email."});
+            return
+        };
 
+        // restore error state
         updateError({state: false, message: ""});
-        updateLaoding(true);
         
-        // call the reset password endpoint
+        updateLoading(true);
+        // make forgot password request
         try {
-            const response = await api.post("/user/reset_password", {}, {
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                params: {
-                    "new_password": password,
-                    "token": token
-                }
-            });
+            const response = await api.post("/user/forgot_password", {
+                  "student_email": emailInput
+              }
+          );
 
             console.log(response);
             updateShowSuccessModal(true);
-        } catch (error:any) {
+        } catch (error: any) {
             console.log(error);
             updateShowSuccessModal(false);
-            updateError({state: true, message: "Password reset link has expired. Please request for a new one."});
+            updateError({state: true, message: "Session token has expired."});
 
             if (error.status == 500) {
                 updateError({state: true, message: "An error occured, contact Admin courageadedara@gmail.com"});
@@ -78,38 +66,41 @@ const Spinner = (
                 router.push("/");
             }
         } finally {
-            updateLaoding(false);
+            updateLoading(false);
         }
     }
 
     return (
-        <div id='reset-password-page' className='flex flex-col gap-5 p-12 min-h-screen dark:bg-gray-900  dark:text-gray-400'>
+        <div id='forgot-password-page' className='flex flex-col gap-5 p-12 min-h-screen dark:bg-gray-900 dark:text-gray-400'>
             <OpenModal hidden={!showSuccessModal}>
                 <div className='flex flex-col gap-5 items-center p-8 text-center dark:bg-gray-800 dark:text-gray-300'>
                     <Image src={"/success.svg"}  className="mx-auto mt-5" width={100} height={100} alt="Success-Icon"/>
-                    <h1 className="font-extrabold text-lg text-center dark:text-gray-200"> Congratulations <br /> Your password has been reset successfully!</h1>
-                    <p className='text-sm'>You can login with the new password now</p>
+                    <h1 className="font-extrabold text-lg text-center dark:text-gray-100"> A mail has been sent to your specified email successfully!</h1>
+                    <p className='text-sm'>Click the link from your mail to reset password</p>
                     <button className="py-2 mt-8 px-4 w-full border rounded cursor-pointer
                         transition duration-300 ease-out hover:border-green-600 hover:text-green-500" 
                         onClick={() => {
                             updateShowSuccessModal(false);
-                            router.push("/");
                         }}
                     >
-                    Proceed to login
+                       <a href="https://www.google.com/search?q=google+mail&oq=google+mail&gs_lcrp=EgZjaHJvbWUqDggAEEUYJxg7GIAEGIoFMg4IABBFGCcYOxiABBiKBTIHCAEQABiABDIHCAIQABiABDIHCAMQABiABDIHCAQQABiABDIHCAUQABiABDIHCAYQABiABDIGCAcQRRg80gEINjQ3NWoxajeoAgCwAgA&sourceid=chrome&ie=UTF-8">Go to mail.</a>
                     </button>
                 </div>
             </OpenModal>
 
             <div>
-                <h1 className='text-2xl text-gray-600 text-center my-2 sm:text-3xl font-extrabold dark:text-gray-300'>Enter your new desired password.</h1>
-                <p className='text-xs text-center'>Once completed, your account will use this new password</p>
+                <h1 className='text-2xl text-gray-600 text-center my-2 sm:text-3xl font-extrabold dark:text-gray-300'>Enter your account&apos;s email address</h1>
+                <p className='text-xs text-center'>A link would be sent to your email for password reset</p>
             </div>
 
-            <form onSubmit={(e:FormEvent) => {e.preventDefault(); handleResetPassword(e)}} className='flex flex-col justify-around'>
-                <input type='password' ref={passwordRef} className='input' placeholder='Enter your new password' />
+            <form onSubmit={(e:FormEvent) => {e.preventDefault(); handleForgotPassword(e)}} className='flex flex-col justify-around'>
+                <input type='email' ref={emailInputRef} className='input' placeholder='Enter your email address' />
                 {error.state && <p className='text-red-500 font-bold text-sm'>{error.message}</p>}
-                <button className='my-4 p-2 w-full bg-purple-600 text-center rounded text-white transition duration-300 ease-out hover:shadow-lg disabled:opacity-60 dark:bg-purple-700 dark:hover:bg-purple-800' disabled={loading}>
+                
+                <button 
+                    className='my-4 p-2 w-full bg-purple-600 text-center rounded text-white transition duration-300 ease-out hover:shadow-lg disabled:opacity-60 dark:bg-purple-700 dark:hover:bg-purple-800' 
+                    disabled={loading}
+                >
                     {loading? Spinner: "Submit"}
                 </button>
             </form>
