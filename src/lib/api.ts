@@ -2,9 +2,12 @@ import Cookies from "js-cookie";
 
 // ─── Config ────────────────────────────────────────────────────────────────
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const TOKEN_COOKIE = "access_token"; // change to match your cookie name
 
+if (!BASE_URL) {
+  throw new Error("BASE_URL is not defined. Please set NEXT_PUBLIC_BASE_URL in your environment variables.");
+}
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
