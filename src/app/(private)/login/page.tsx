@@ -12,13 +12,10 @@ import { useAuth } from "@/context/AuthContext";
 // Home is the login page
 export default function Home() {
   const [isStudent, changeIsStudent] = useState(false);
-  const [loading, updateLoading] = useState(false);
+  const [loginIsLoading, setLoginIsLoading] = useState(false);
   const [submitDisabled, updateSubmitDisabled] = useState(false);
   const [showDisclaimer, updateShowDisclaimer] = useState(true);
-  const [error, updateError] = useState({
-    state: false,
-    message: "",
-  });
+
   const [formData, updateFormData] = useState({
     email: "",
     password: "",
@@ -26,11 +23,11 @@ export default function Home() {
   });
 
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading, refetchUser } = useAuth();
   const { showToast } = useToast();
 
   const sendFormData = async () => {
-    updateLoading(true);
+    setLoginIsLoading(true);
 
     const { data, error } = await api.post<AuthResponse>(
       "/auth/login",
@@ -40,7 +37,7 @@ export default function Home() {
       },
       { public: true, formEncoded: true },
     );
-    updateLoading(false);
+    setLoginIsLoading(false);
     updateSubmitDisabled(false);
 
     if (error) {
@@ -50,6 +47,7 @@ export default function Home() {
     // Dynamically route the user based on their role
     if (data?.access_token !== undefined) {
       Cookies.set("access_token", data.access_token, { expires: 1 }); // 1 day
+      await refetchUser();
       router.push(`/dashboard/${data?.role}`);
     } else {
       console.log("Login failed: No access token received.");
@@ -104,6 +102,7 @@ export default function Home() {
       router.push(`/dashboard/${user.role}`);
     }
   }, [user, loading]);
+
   return (
     <div
       id="login"
@@ -172,15 +171,13 @@ export default function Home() {
           placeholder="Password"
         />
 
-        {error.state ? <p className="text-red-500">{error.message}</p> : ""}
-
         <button
           type="submit"
           disabled={submitDisabled}
           onClick={sendFormData}
           className="my-4 p-2 w-full bg-purple-600 rounded text-white transition duration-300 ease-out hover:shadow-lg disabled:opacity-50 dark:bg-purple-700 dark:hover:bg-purple-800 dark:text-gray-100"
         >
-          {loading ? Spinner : "Login"}
+          {loginIsLoading ? Spinner : "Login"}
         </button>
       </form>
 

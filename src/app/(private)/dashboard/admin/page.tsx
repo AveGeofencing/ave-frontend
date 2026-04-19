@@ -34,7 +34,7 @@ export default function Admin_dashboard() {
   const isAfter10PM = new Date().getHours() >= 22;
   const router = useRouter();
   const { showToast } = useToast();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const getGeolocation = async (): Promise<{
     latitude: number;
@@ -139,6 +139,10 @@ export default function Admin_dashboard() {
   useEffect(() => {
     getClassesCreatedByMe();
   }, []);
+
+  if (loading) {
+    return Spinner;
+  }
 
   return (
     <main className="min-h-screen bg-primary text-primary">
