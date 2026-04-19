@@ -99,6 +99,7 @@ export default function Home() {
 
   useEffect(() => {
     if (user) {
+      showToast("Automatically logged in.");
       router.push(`/dashboard/${user.role}`);
     }
   }, [user, loading]);

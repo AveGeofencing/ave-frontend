@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import axios from "axios";
 import { api } from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
 
 interface VerifyResponse {
   user_email: string;
@@ -15,21 +15,21 @@ interface RegisterData {
   username: string;
   user_matric: string;
   password: string;
-  role: "student";
+  role: string;
 }
 
 const submitDetails = async (data: RegisterData) => {
   const res = await api.post(`/auth/create-user`, data);
-  return res.data;
+  return res;
 };
 
 function VerifyPage() {
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const token = searchParams.get("token") || "";
   const [isTokenVerified, setIsTokenVerified] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [verificationStatus, updateVerificationStatus] = useState<
     "success" | "idle" | "error"
@@ -40,7 +40,7 @@ function VerifyPage() {
     username: "",
     user_matric: "",
     password: "",
-    role: "student",
+    role: "",
   });
 
   const isFormValid =
@@ -81,25 +81,25 @@ function VerifyPage() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    try {
-      await submitDetails(data);
-      router.push("/login");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        switch (error.response?.status) {
-          case 409:
-            setError("Username or matric number already taken");
-            break;
-          case 400:
-            setError("Invalid details, please check your input");
-            break;
-          default:
-            setError("Something went wrong, please try again");
-        }
-      }
-    } finally {
+    const res = await submitDetails(data);
+
+    if (res.status === 201) {
       setLoading(false);
+      router.push("/login");
+      return;
     }
+
+    switch (res.status) {
+      case 409:
+        showToast("Username or matric number already taken");
+        break;
+      case 400:
+        showToast("Invalid details, please check your input");
+        break;
+      default:
+        showToast("Something went wrong, please try again");
+    }
+    setLoading(false);
   };
 
   // -----------Use Effect------------------------------------------------------------------------------
@@ -120,7 +120,7 @@ function VerifyPage() {
     >
       <div
         id="container"
-        className="flex flex-col items-center md:border md:rounded md:shadow-inner md:p-8 md:w-fit"
+        className="flex flex-col items-center md:border md:rounded-xl md:p-8 md:w-fit"
       >
         <div className="rounded-full p-4 bg-purple-100 block w-fit dark:bg-purple-800">
           <svg
@@ -138,17 +138,20 @@ function VerifyPage() {
             />
           </svg>
         </div>
-        <form action="">
+        <form
+          action="submit"
+          className="flex flex-col justify-center items-center w-full"
+        >
           <div className="py-4 text-center">
-            <h1 className="text-2xl text-purple-900 text-center font-bold dark:text-gray-200">
+            <h1 className="text-2xl text-purple-900 text-center font-semibold">
               {isTokenVerified ? "Input your details" : "Verifying link..."}
             </h1>
           </div>
           {isTokenVerified && (
-            <div className="flex flex-col gap-2 align-center justify-center">
+            <div className="flex flex-col gap-4 align-center justify-center w-full">
               <input
                 type="text"
-                className="border-2 rounded-lg h-10 border-purple-900 p-2"
+                className="border rounded-lg h-12 border-purple-900 p-2"
                 placeholder="Username"
                 value={data.username}
                 onChange={(e) =>
@@ -157,16 +160,29 @@ function VerifyPage() {
               />
               <input
                 type="text"
-                className="border-2 rounded-lg h-10 border-purple-900 p-2"
+                className="border rounded-lg h-12 border-purple-900 p-2"
                 placeholder="Matric Number"
                 value={data.user_matric}
                 onChange={(e) =>
                   setData((prev) => ({ ...prev, user_matric: e.target.value }))
                 }
               />
+              <select
+                value={data.role}
+                onChange={(e) =>
+                  setData((prev) => ({ ...prev, role: e.target.value }))
+                }
+                className="border rounded-lg h-12 border-purple-900 p-2"
+              >
+                <option value="" disabled>
+                  Select a role
+                </option>
+                <option value="student">Student</option>
+                <option value="admin">Teacher</option>
+              </select>
               <input
                 type="password"
-                className="border-2 rounded-lg h-10 border-purple-900 p-2"
+                className="border rounded-lg h-12 border-purple-900 p-2"
                 placeholder="Password"
                 value={data.password}
                 onChange={(e) =>
@@ -187,10 +203,9 @@ function VerifyPage() {
                 Your email has been successfully verified.
               </p>
             ))}
-          {error && <p className="text-red-500 text-sm">{error}</p>}
           {isTokenVerified && (
             <button
-              className="py-3 px-4 w-full text-center font-bold bg-purple-500 cursor-pointer text-white rounded-lg my-4 disabled:opacity-50 dark:bg-purple-700 dark:text-gray-300"
+              className="py-3 px-4 w-full text-center font-semibold bg-purple-500 cursor-pointer text-white rounded-lg my-4 disabled:opacity-50 dark:bg-purple-700 dark:text-gray-300"
               disabled={!isFormValid || loading}
               onClick={(e) => {
                 e.preventDefault();
@@ -206,8 +221,6 @@ function VerifyPage() {
   );
 }
 
-// useSearchParams() requires a Suspense boundary somewhere in the tree —
-// wrapping here keeps everything in one file
 export default function Page() {
   return (
     <Suspense>

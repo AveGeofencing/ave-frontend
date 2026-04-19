@@ -17,6 +17,9 @@ interface APIResponse {
 }
 
 export default function Admin_dashboard() {
+  const { showToast } = useToast();
+  const { user, loading } = useAuth();
+
   const [classStarted, updateClassStarted] = useState(false);
   const [geofencesByThisAdmin, updateGeofencesByThisAdmin] = useState<
     AdminGeofence[]
@@ -33,8 +36,6 @@ export default function Admin_dashboard() {
 
   const isAfter10PM = new Date().getHours() >= 22;
   const router = useRouter();
-  const { showToast } = useToast();
-  const { user, loading } = useAuth();
 
   const getGeolocation = async (): Promise<{
     latitude: number;
