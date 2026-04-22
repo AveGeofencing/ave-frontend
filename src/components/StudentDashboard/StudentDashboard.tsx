@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import Modal from "../Model/Model";
+import Modal from "../Modal/Modal";
 import Image from "next/image";
 import { useToast } from "@/context/ToastContext";
 import { api } from "@/lib/api";
 import Spinner from "../Spinner/Spinner";
 import GeofenceCard from "../Geofence/geofence";
+import Rekognition from "../aws-rekognition-test/rekognition-test";
 import { useAuth } from "@/context/AuthContext";
 
 async function getGeofences() {
@@ -30,6 +31,9 @@ export default function StudentDashboard({
   const [attendanceBeingRecorded, setAttendanceBeingRecorded] = useState(false);
   const [fenceCode, setFenceCode] = useState<string>("");
   const [gettingGeofences, setGettingGeofences] = useState(false);
+  const [livenessTestStart, setLivenessTestStart] = useState<boolean>(false);
+  const [livenessTestSucceed, setLivenessTestSucceed] =
+    useState<boolean>(false);
   const [selectedGeofenceData, updateSelectedGeofenceData] = useState<Geofence>(
     {
       id: "",
@@ -141,77 +145,93 @@ export default function StudentDashboard({
     }
   };
 
+  const handleSubmitButtonClicked = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    setLivenessTestStart(true);
+    return;
+  };
+
+  const livenessTestCompletedHandler = () => {
+    if (livenessTestSucceed) {
+      showToast("Liveness test succeed");
+      setLivenessTestStart(false);
+      recordAttendanceHandler(fenceCode, selectedGeofenceData);
+      return;
+    }
+
+    showToast("Could not verify liveness");
+    setLivenessTestStart(false);
+  };
+
+  const handleModalClosed = () => {
+    updateShowModal(false);
+    setFenceCode("");
+    setLivenessTestStart(false);
+  };
+
   return loading ? (
-    <div className="flex m-auto justify-center items-center">
-      {user?.username}
-    </div>
+    <div className="flex m-auto justify-center items-center">{Spinner}</div>
   ) : (
     <div
       id="Student-dashboard-page"
       className="p-4 flex font-body flex-col py-16 min-h-screen dark:bg-gray-900 dark:text-gray-400"
     >
       <>
-        <Modal show={showModal} modalClosed={() => updateShowModal(false)}>
-          <div className="relative flex flex-col items-center justify-center w-full h-full py-4 px-6 gap-5 rounded">
-            <button
-              className="absolute top-0 right-2 hover:cursor-pointer"
-              onClick={(e) => {
-                updateShowModal(false);
-                setFenceCode("");
-              }}
-              disabled={attendanceBeingRecorded}
-            >
-              X
-            </button>
-            <h1
-              className="
+        <Modal show={showModal} modalClosed={handleModalClosed}>
+          {livenessTestStart ? (
+            <Rekognition
+              livenessTestCompletedHandler={livenessTestCompletedHandler}
+              setLivenessTestSucceed={setLivenessTestSucceed}
+            />
+          ) : (
+            <div className="relative flex flex-col items-center justify-center w-full h-full py-4 px-6 gap-5 rounded">
+              <h1
+                className="
             text-2xl font-bold text-center 
             dark:text-white
           "
-            >
-              Enter the class fence code.
-            </h1>
+              >
+                Enter the class fence code.
+              </h1>
 
-            {!selectedGeofenceData.has_registered ? (
-              <div>
-                <form
-                  action=""
-                  className="flex flex-col items-center justify-center"
-                >
-                  <input
-                    type="name"
-                    name="fenceCode"
-                    id="fence_code"
-                    value={fenceCode}
-                    onChange={(e) => setFenceCode(e.target.value)} // Set fence code value
-                    className="input w-[130%] px-5"
-                    maxLength={6}
-                    placeholder={`Enter fence code`}
-                  />
-                </form>
-                <div className="flex flex-row gap-2 justify-center items-center">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      recordAttendanceHandler(fenceCode, selectedGeofenceData);
-                    }}
-                    className="
+              {!selectedGeofenceData.has_registered ? (
+                <div>
+                  <form
+                    action=""
+                    className="flex flex-col items-center justify-center"
+                  >
+                    <input
+                      type="name"
+                      name="fenceCode"
+                      id="fence_code"
+                      value={fenceCode}
+                      onChange={(e) => setFenceCode(e.target.value)} // Set fence code value
+                      className="input w-[130%] px-5"
+                      maxLength={6}
+                      placeholder={`Enter fence code`}
+                    />
+                  </form>
+                  <div className="flex flex-row gap-2 justify-center items-center">
+                    <button
+                      onClick={handleSubmitButtonClicked}
+                      className="
                   bg-green-700 text-white p-2 w-24 rounded-lg
                   hover:bg-green-500 transition ease-out duration-300
                   disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-700
                   "
-                    disabled={attendanceBeingRecorded || fenceCode.length < 6} // Disable button while processing
-                  >
-                    {attendanceBeingRecorded ? Spinner : "Confirm"}
-                  </button>
+                      disabled={attendanceBeingRecorded || fenceCode.length < 6} // Disable button while processing
+                    >
+                      {attendanceBeingRecorded ? Spinner : "Confirm"}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <h1 className="text-center text-green-500 font-bold">
-                You have already recorded attendance for this class session.
-              </h1>
-            )}
-          </div>
+              ) : (
+                <h1 className="text-center text-green-500 font-bold">
+                  You have already recorded attendance for this class session.
+                </h1>
+              )}
+            </div>
+          )}
         </Modal>
 
         <div className="flex flex-col items-center justify-center">

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Modal from "@/components/Model/Model";
+import Modal from "@/components/Modal/Modal";
 import { useRouter } from "next/navigation";
 import { DateTime, Duration } from "luxon";
 import { api } from "@/lib/api";

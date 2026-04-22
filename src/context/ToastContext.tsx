@@ -1,8 +1,13 @@
-// context/ToastContext.tsx
 "use client";
 
-import Toast from "@/components/Alert/Alert";
-import { createContext, useContext, useState } from "react";
+import Toast from "@/components/Toast/Toast";
+import { createContext, useCallback, useContext, useState } from "react";
+
+interface ToastItem {
+  id: string;
+  message: string;
+  isError?: boolean;
+}
 
 interface ToastContextType {
   showToast: (message: string, isError?: boolean) => void;
@@ -11,26 +16,23 @@ interface ToastContextType {
 const ToastContext = createContext<ToastContextType | null>(null);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [message, setMessage] = useState("");
-  const [show, setShow] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const showToast = (message: string, isError?: boolean) => {
-    setMessage(message);
-    setShow(true);
-    if (isError) {
-      setIsError(isError);
-    }
-  };
+  const showToast = useCallback((message: string, isError?: boolean) => {
+    const id =
+      typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2);
+    setToasts((prev) => [...prev, { id, message, isError }]);
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
-      <Toast
-        message={message}
-        show={show}
-        closeAlert={() => setShow(false)}
-        isError={isError}
-      />
+      <Toast toasts={toasts} removeToast={removeToast} />
       {children}
     </ToastContext.Provider>
   );

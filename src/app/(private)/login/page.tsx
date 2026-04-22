@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Modal from "@/components/Model/Model";
+import Modal from "@/components/Modal/Modal";
 import { api } from "@/lib/api";
 import Spinner from "@/components/Spinner/Spinner";
 import { useToast } from "@/context/ToastContext";

@@ -1,36 +1,57 @@
-// components/Toast.tsx
 import { useEffect } from "react";
 
-interface ToastProps {
+interface ToastItem {
+  id: string;
   message: string;
-  show: boolean;
-  closeAlert: () => void;
-  duration?: number; // auto-dismiss in ms, default 3000
-  isError?: boolean; // whether this is an error toast
+  isError?: boolean;
+}
+
+interface ToastProps {
+  toasts: ToastItem[];
+  removeToast: (id: string) => void;
+  duration?: number;
 }
 
 const Toast: React.FC<ToastProps> = ({
-  message,
-  show,
-  closeAlert,
+  toasts,
+  removeToast,
   duration = 5000,
-  isError = false,
 }) => {
+  return (
+    <div className="fixed bottom-6 right-6 z-[2500] flex flex-col gap-2 items-end">
+      {toasts
+        .slice()
+        .reverse()
+        .map((toast) => (
+          <ToastItem
+            key={toast.id}
+            toast={toast}
+            removeToast={removeToast}
+            duration={duration}
+          />
+        ))}
+    </div>
+  );
+};
+
+const ToastItem: React.FC<{
+  toast: ToastItem;
+  removeToast: (id: string) => void;
+  duration: number;
+}> = ({ toast, removeToast, duration }) => {
   useEffect(() => {
-    if (!show) return;
-    const timer = setTimeout(closeAlert, duration);
+    const timer = setTimeout(() => removeToast(toast.id), duration);
     return () => clearTimeout(timer);
-  }, [show]);
+  }, [toast.id]);
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-[2500] flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg
+      className="flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg
         bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700
-        transition-all duration-300 ease-in-out
-        ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}
+        transition-all duration-300 ease-in-out opacity-100 translate-y-0"
     >
       <span className="text-sm text-gray-700 dark:text-gray-300 flex flex-row gap-2 items-center">
-        {isError && (
+        {toast.isError && (
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -57,10 +78,10 @@ const Toast: React.FC<ToastProps> = ({
             />
           </svg>
         )}
-        {message}
+        {toast.message}
       </span>
       <button
-        onClick={closeAlert}
+        onClick={() => removeToast(toast.id)}
         className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none"
       >
         ✕
