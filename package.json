@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-amplify/ui-react-liveness": "^3.6.4",
     "ave": "file:",
+    "aws-amplify": "^6.16.4",
     "axios": "^1.7.7",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
