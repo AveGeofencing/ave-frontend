@@ -296,11 +296,9 @@ export default function StudentDashboard({
           ) : (
             <div className="flex flex-col gap-4 items-center justify-center min-h-[30vh] p-12">
               <img src="/sad-girl.svg" alt="no classes" className="w-64 h-64" />
-              (
               <h3 className="text-sm text-center dark:text-gray-400">
                 Sorry, there are no active classes at the moment
               </h3>
-              )
             </div>
           )}
         </div>
