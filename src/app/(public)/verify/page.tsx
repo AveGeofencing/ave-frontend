@@ -431,15 +431,6 @@ function VerifyPage() {
                     >
                       Take Photo
                     </button>
-                    <label className="flex-1 py-2 px-3 border border-purple-900 text-purple-900 rounded-lg text-sm font-semibold text-center cursor-pointer">
-                      Upload
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileInput}
-                      />
-                    </label>
                   </div>
                 )}
               </div>
