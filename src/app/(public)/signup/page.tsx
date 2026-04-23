@@ -87,12 +87,12 @@ export default function InitialRegisterPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-gray-900 md:flex md:flex-col md:justify-center md:items-center p-4 py-8 md:px-60 md:pb-16 dark:text-gray-400">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-white dark:bg-gray-900 md:flex md:flex-col p-4 py-8 md:px-60 md:pb-16 dark:text-gray-400">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="my-8">
           <h1 className="my-2 text-3xl md:text-center dark:text-gray-200">
-            Sign Up with AVE.
+            Sign Up to AVE.
           </h1>
           <p className="text-purple-600 md:text-center text-sm">
             Enter your email to get started.

@@ -135,7 +135,7 @@ export default function ClassPage({ fenceId }: { fenceId: string }) {
                   ? "#22c55e"
                   : "#eab308"
             }
-            stroke-width="2"
+            strokeWidth="2"
             fill="none"
           >
             {classData.status !== "inactive" && (

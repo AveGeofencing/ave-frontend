@@ -16,9 +16,11 @@ function Modal(props: {
       >
         <div
           className="
-          relative flex justify-center items-center p-4 w-full h-screen sm:p-6 bg-white dark:bg-gray-900 border-2 border-black
-          sm:w-[400px] sm:h-[350px] sm:rounded-lg
-        "
+            relative flex justify-center items-center p-4 w-full
+            h-screen sm:h-auto
+            sm:p-6 bg-white dark:bg-gray-900 border-2 border-black
+            sm:w-[600px] sm:min-h-[50%] sm:rounded-lg
+          "
         >
           <button
             className="absolute top-6 right-6 hover:cursor-pointer"
@@ -34,8 +36,8 @@ function Modal(props: {
               <path
                 d="M7 7L17 17M17 7L7 17"
                 stroke="#111827"
-                stroke-width="2"
-                stroke-linecap="round"
+                strokeWidth="2"
+                strokeLinecap="round"
               />
             </svg>
           </button>

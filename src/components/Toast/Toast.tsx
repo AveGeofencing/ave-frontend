@@ -62,7 +62,7 @@ const ToastItem: React.FC<{
             cy="10"
             r="4"
             stroke={toast.isError ? "#ef4444" : "#eab308"}
-            stroke-width="2"
+            strokeWidth="2"
             fill="none"
           ></circle>
 

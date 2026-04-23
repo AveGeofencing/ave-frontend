@@ -148,7 +148,7 @@ export default function Admin_dashboard() {
   return (
     <main className="min-h-screen bg-primary text-primary  w-full md:w-[800px]">
       <Modal show={classStarted} modalClosed={() => updateClassStarted(false)}>
-        <div className="flex flex-col items-center justify-center w-full py-6 px-8 gap-5 bg-card text-primary">
+        <div className="flex flex-col items-center justify-center w-full py-6 px-8 gap-5 text-primary">
           <h1 className="text-2xl font-bold text-center">Create Geofence.</h1>
 
           <p className="text-center text-secondary">
