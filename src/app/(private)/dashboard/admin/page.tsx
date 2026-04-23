@@ -146,7 +146,7 @@ export default function Admin_dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-primary text-primary">
+    <main className="min-h-screen bg-primary text-primary  w-full md:w-[800px]">
       <Modal show={classStarted} modalClosed={() => updateClassStarted(false)}>
         <div className="flex flex-col items-center justify-center w-full py-6 px-8 gap-5 bg-card text-primary">
           <h1 className="text-2xl font-bold text-center">Create Geofence.</h1>
@@ -237,16 +237,14 @@ export default function Admin_dashboard() {
       </Modal>
 
       {/* Page content */}
-      <div className="w-full max-w-4xl mx-auto px-4">
+      <div className="w-full mx-auto px-4">
         {/* Top section */}
         <div className="flex flex-col items-center justify-center pt-32 gap-10 mb-6">
           <div className="flex flex-col gap-5 text-center">
-            <div className="flex gap-2 items-center justify-center">
-              <h1 className="text-3xl font-bold">
-                Hello there,{" "}
-                <span className="text-purple">{user?.username}</span>.
-              </h1>
-            </div>
+            <h1 className="text-3xl font-bold">
+              Hello there, <span className="text-purple">{user?.username}</span>
+              .
+            </h1>
 
             <h3>You&apos;re an admin! Don&apos;t know what to do?</h3>
 
@@ -288,12 +286,7 @@ export default function Admin_dashboard() {
           {loadingActiveClasses ? (
             <div className="flex justify-center py-10">{Spinner}</div>
           ) : geofencesByThisAdmin.length !== 0 ? (
-            <div
-              className="grid gap-4"
-              style={{
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              }}
-            >
+            <div className="grid sm:grid-cols-4 gap-4">
               {geofencesByThisAdmin.map(
                 (geofence: AdminGeofence, index: number) => (
                   <GeofenceCard

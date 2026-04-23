@@ -113,10 +113,65 @@ export default function ClassPage({ fenceId }: { fenceId: string }) {
   }
 
   return (
-    <div className="flex px-6 pt-20 flex-col gap-4 min-h-screen dark:bg-gray-900 dark:text-gray-400">
-      <h1 className="text-4xl font-extrabold text-center dark:text-gray-300">
-        {classData.name}
-      </h1>
+    <div className="flex flex-col w-full sm:w-[700px] shrink-0 items-center px-6 pt-20 gap-4 min-h-screen">
+      <div className="flex items-center justify-center gap-3">
+        <h1 className="text-4xl font-extrabold text-center dark:text-gray-300">
+          {classData.name}
+        </h1>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="10"
+            cy="10"
+            r="4"
+            stroke={
+              classData.status === "inactive"
+                ? "#ef4444"
+                : classData.status === "active"
+                  ? "#22c55e"
+                  : "#eab308"
+            }
+            stroke-width="2"
+            fill="none"
+          >
+            {classData.status !== "inactive" && (
+              <>
+                <animate
+                  attributeName="r"
+                  from="4"
+                  to="9"
+                  dur="1.5s"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  from="0.7"
+                  to="0"
+                  dur="1.5s"
+                  repeatCount="indefinite"
+                />
+              </>
+            )}
+          </circle>
+
+          <circle
+            cx="10"
+            cy="10"
+            r="4"
+            fill={
+              classData.status === "inactive"
+                ? "#ef4444"
+                : classData.status === "active"
+                  ? "#22c55e"
+                  : "#eab308"
+            }
+          />
+        </svg>
+      </div>
 
       <h2 className="text-xl text-gray-500 text-center">
         Your class code is{" "}
@@ -127,7 +182,7 @@ export default function ClassPage({ fenceId }: { fenceId: string }) {
         </span>
       </h2>
 
-      <div id="classAttendance">
+      <div id="classAttendance" className="w-full">
         <button
           onClick={getAttendanceHandler}
           className="py-2 px-6 w-full border border-white my-3 rounded text-white bg-purple-500
@@ -197,10 +252,10 @@ export default function ClassPage({ fenceId }: { fenceId: string }) {
           >
             <thead>
               <tr>
-                <th className="border px-4 py-2 w-[8%]">S/N</th>
+                <th className="border px-4 py-2 w-[5%]">S/N</th>
                 <th className="border px-4 py-2 w-[60%]">Name</th>
-                <th className="border px-4 py-2">Matric No.</th>
-                <th className="border px-4 py-2">Timestamp</th>
+                <th className="border px-4 py-2 w-[25%]">Matric No.</th>
+                <th className="border px-4 py-2 w-[10%]">Timestamp</th>
               </tr>
             </thead>
 

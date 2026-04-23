@@ -174,7 +174,7 @@ export default function StudentDashboard({
   ) : (
     <div
       id="Student-dashboard-page"
-      className="p-4 flex font-body flex-col py-16 min-h-screen dark:bg-gray-900 dark:text-gray-400"
+      className="p-4 flex font-body flex-col py-16 min-h-screen dark:bg-gray-900 dark:text-gray-400 w-full md:w-[800px]"
     >
       <>
         <Modal show={showModal} modalClosed={handleModalClosed}>
@@ -256,7 +256,7 @@ export default function StudentDashboard({
             <button
               onClick={getGeofencesHandler}
               className="py-2 px-6 w-full text white border border-white my-3 rounded-lg text-white bg-purple-500
-          transition ease-out duration-300 hover:bg-purple-800 dark:bg-purple-700 dark:hover:bg-purple-800 dark:border-0 dark:text-gray-200"
+              transition ease-out duration-300 hover:bg-purple-800 dark:bg-purple-700 dark:hover:bg-purple-800 dark:border-0 dark:text-gray-200"
             >
               Refresh List
             </button>
@@ -267,7 +267,7 @@ export default function StudentDashboard({
           className="
             flex flex-col justify-center items-center w-full 
             dark:text-white self-center 
-            md:w-[50%]
+            md:w-full
         "
         >
           <h3 className="flex self-center border-b-2 w-full px-4 py-2 my-6 dark:border-white">

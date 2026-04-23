@@ -51,33 +51,28 @@ const ToastItem: React.FC<{
         transition-all duration-300 ease-in-out opacity-100 translate-y-0"
     >
       <span className="text-sm text-gray-700 dark:text-gray-300 flex flex-row gap-2 items-center">
-        {toast.isError && (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width={12}
-            height={12}
-          >
-            <line
-              x1="4"
-              y1="4"
-              x2="20"
-              y2="20"
-              stroke="#E24B4A"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <line
-              x1="20"
-              y1="4"
-              x2="4"
-              y2="20"
-              stroke="#E24B4A"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        )}
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="10"
+            cy="10"
+            r="4"
+            stroke={toast.isError ? "#ef4444" : "#eab308"}
+            stroke-width="2"
+            fill="none"
+          ></circle>
+
+          <circle
+            cx="10"
+            cy="10"
+            r="4"
+            fill={toast.isError ? "#ef4444" : "#eab308"}
+          />
+        </svg>
         {toast.message}
       </span>
       <button

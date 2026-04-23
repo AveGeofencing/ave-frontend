@@ -52,7 +52,7 @@ export default function RootLayout({
         </div>
       </OpenModal>
       <AuthenticatedNav handleLogout={() => updateShowLogoutModal(true)} />
-      {children}
+      <div className="flex flex-col items-center w-full">{children}</div>
     </>
   );
 }
