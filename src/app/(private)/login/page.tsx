@@ -98,8 +98,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      showToast("Automatically logged in.");
+    if (user && !loading) {
+      showToast("Logged in.");
       router.push(`/dashboard/${user.role}`);
     }
   }, [user, loading]);
@@ -107,13 +107,13 @@ export default function Home() {
   return (
     <div
       id="login"
-      className="w-full bg-white p-4 py-8 min-h-screen md:flex md:flex-col md:justify-center md:px-60 md:pb-16 dark:bg-gray-900"
+      className="w-full flex flex-col items-center justify-center text-center bg-white p-4 py-8 min-h-screen md:px-60 md:pb-16 dark:bg-gray-900"
     >
       <Modal
         show={showDisclaimer}
         modalClosed={() => updateShowDisclaimer(false)}
       >
-        <div className="flex flex-col gap-4 dark:bg-gray-800 dark:text-gray-300 dark:p-4 dark:py-6 dark:rounded">
+        <div className="flex flex-col gap-4 dark:text-gray-300 dark:p-4 dark:py-6 dark:rounded">
           <h1 className="text-center font-extrabold dark:text-gray-300">
             Important notice!
           </h1>
@@ -132,12 +132,15 @@ export default function Home() {
 
       <div id="head" className="my-8">
         <h1 className="my-2 text-3xl font-extrabold md:text-center dark:text-gray-300">
-          Login to AVE.
+          Login to AVE
         </h1>
         <h1 className="text-purple-600 md:text-center">
           Enter your Login details.
         </h1>
-        <div id="links" className="m-4 flex justify-around dark:text-gray-400">
+        <div
+          id="links"
+          className=" mt-4 flex justify-around dark:text-gray-400"
+        >
           <span
             className={`border-b-2 p-2 cursor-pointer select-none ${isStudent ? "border-b-purple-500" : ""} `}
             onClick={() => changeIsStudent(true)}
@@ -155,10 +158,11 @@ export default function Home() {
 
       <form
         action="#"
-        className="flex flex-col justify-around"
+        className="flex flex-col justify-around w-full sm:w-[500px]"
         onSubmit={(e) => e.preventDefault()}
       >
         <input
+          type="username"
           name="email"
           className="input"
           onChange={(e) => handleChange(e)}
@@ -184,14 +188,14 @@ export default function Home() {
 
       <p className="my-2 text-md dark:text-gray-400">
         Don&apos;t have an account?{" "}
-        <Link href={"/signup"} className="font-light underline">
+        <Link href="/signup" className="font-light underline">
           {" "}
           Sign Up
         </Link>
       </p>
       <p className="my-2 text-md dark:text-gray-400">
         Forgotten Password?{" "}
-        <Link href={"/forgot-password"} className="font-light underline">
+        <Link href="/forgot-password" className="font-light underline">
           {" "}
           Reset Password
         </Link>

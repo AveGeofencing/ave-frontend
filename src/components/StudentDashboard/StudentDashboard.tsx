@@ -152,15 +152,15 @@ export default function StudentDashboard({
   };
 
   const livenessTestCompletedHandler = () => {
+    setLivenessTestStart(false);
+
     if (livenessTestSucceed) {
-      showToast("Liveness test succeed");
-      setLivenessTestStart(false);
+      showToast("Liveness test succeeded");
       recordAttendanceHandler(fenceCode, selectedGeofenceData);
       return;
     }
 
     showToast("Could not verify liveness");
-    setLivenessTestStart(false);
   };
 
   const handleModalClosed = () => {

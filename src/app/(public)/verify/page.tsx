@@ -4,60 +4,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 
-// --- Data ---
-interface Department {
-  id: number;
-  name: string;
-}
-
-interface College {
-  id: number;
-  name: string;
-  departments: Department[];
-}
-
-const COLLEGES: College[] = [
-  {
-    id: 1,
-    name: "College of Engineering",
-    departments: [
-      { id: 1, name: "Computer Engineering" },
-      { id: 2, name: "Electrical Engineering" },
-      { id: 3, name: "Mechanical Engineering" },
-      { id: 4, name: "Civil Engineering" },
-    ],
-  },
-  {
-    id: 2,
-    name: "College of Science",
-    departments: [
-      { id: 5, name: "Computer Science" },
-      { id: 6, name: "Mathematics" },
-      { id: 7, name: "Physics" },
-      { id: 8, name: "Chemistry" },
-    ],
-  },
-  {
-    id: 3,
-    name: "College of Medicine",
-    departments: [
-      { id: 9, name: "Medicine & Surgery" },
-      { id: 10, name: "Nursing" },
-      { id: 11, name: "Pharmacy" },
-    ],
-  },
-  {
-    id: 4,
-    name: "College of Arts & Social Sciences",
-    departments: [
-      { id: 12, name: "English & Literary Studies" },
-      { id: 13, name: "History & International Studies" },
-      { id: 14, name: "Economics" },
-      { id: 15, name: "Sociology" },
-    ],
-  },
-];
-
 // --- Types ---
 interface VerifyResponse {
   user_email: string;
@@ -74,14 +20,26 @@ interface RegisterData {
   department: number | null;
 }
 
+interface DepartmentData {
+  id: number;
+  name: string;
+}
+
+interface CollegeData {
+  id: number;
+  name: string;
+  departments: DepartmentData[];
+}
+
 // --- Component ---
 function VerifyPage() {
+  const router = useRouter();
   const { showToast } = useToast();
   const searchParams = useSearchParams();
-  const router = useRouter();
-
   const token = searchParams.get("token") || "";
-  const [isTokenVerified, setIsTokenVerified] = useState(false);
+
+  const [listOfColleges, setListOfColleges] = useState<CollegeData[]>([]);
+  const [isTokenVerified, setIsTokenVerified] = useState(true);
   const [loading, setLoading] = useState(false);
   const [verificationStatus, updateVerificationStatus] = useState<
     "success" | "idle" | "error"
@@ -102,8 +60,15 @@ function VerifyPage() {
     null,
   );
 
+  // --- Photo state ---
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
   const availableDepartments =
-    COLLEGES.find((c) => c.id === selectedCollegeId)?.departments ?? [];
+    listOfColleges.find((c) => c.id === selectedCollegeId)?.departments ?? [];
 
   const handleCollegeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const collegeId = Number(e.target.value);
@@ -111,13 +76,6 @@ function VerifyPage() {
     // Reset department when college changes
     setFormData((prev) => ({ ...prev, department: null }));
   };
-
-  // --- Photo state ---
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [cameraActive, setCameraActive] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
 
   const isFormValid =
     formData.username.trim() !== "" &&
@@ -282,9 +240,22 @@ function VerifyPage() {
     handleVerification(token);
   }, [token]);
 
+  // get the list of colleges and their departments.
+  useEffect(() => {
+    const getColleges = async () => {
+      const response = await api.get<CollegeData[]>("/user/colleges");
+      if (response.status == 200 && response.data) {
+        setListOfColleges(response.data);
+      }
+    };
+
+    getColleges();
+  }, []);
+
   return (
     <div className="min-h-screen max-w-screen px-2 sm:p-8 py-12 md:flex md:justify-center md:items-center dark:bg-gray-900">
-      <div className="flex flex-col items-center md:border md:rounded-xl md:p-8 md:w-fit">
+      <div className="flex flex-col items-center md:border md:rounded-xl md:p-8 md:w-[30%]">
+        {/* Mail SVG div at the top */}
         <div className="rounded-full p-4 bg-purple-100 block w-fit dark:bg-purple-800">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -313,7 +284,7 @@ function VerifyPage() {
             <div className="flex flex-col gap-4 w-full">
               <input
                 type="text"
-                className="border rounded-lg h-12 border-purple-900 p-2"
+                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
                 placeholder="Username"
                 value={formData.username}
                 onChange={(e) =>
@@ -322,7 +293,7 @@ function VerifyPage() {
               />
               <input
                 type="text"
-                className="border rounded-lg h-12 border-purple-900 p-2"
+                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
                 placeholder="Matric Number"
                 value={formData.user_matric}
                 onChange={(e) =>
@@ -337,7 +308,7 @@ function VerifyPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, role: e.target.value }))
                 }
-                className="border rounded-lg h-12 border-purple-900 p-2"
+                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
               >
                 <option value="" disabled>
                   Select a role
@@ -350,12 +321,12 @@ function VerifyPage() {
               <select
                 value={selectedCollegeId ?? ""}
                 onChange={handleCollegeChange}
-                className="border rounded-lg h-12 border-purple-900 p-2"
+                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
               >
                 <option value="" disabled>
                   Select a college
                 </option>
-                {COLLEGES.map((college) => (
+                {listOfColleges.map((college) => (
                   <option key={college.id} value={college.id}>
                     {college.name}
                   </option>
@@ -372,7 +343,7 @@ function VerifyPage() {
                   }))
                 }
                 disabled={selectedCollegeId === null}
-                className="border rounded-lg h-12 border-purple-900 p-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <option value="" disabled>
                   {selectedCollegeId === null
@@ -388,7 +359,7 @@ function VerifyPage() {
 
               <input
                 type="password"
-                className="border rounded-lg h-12 border-purple-900 p-2"
+                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) =>
@@ -397,7 +368,7 @@ function VerifyPage() {
               />
 
               {/* Photo capture section */}
-              <div className="border rounded-lg border-purple-900 p-3 flex flex-col gap-3">
+              <div className="border rounded-lg border-[var(--color-input-border)] p-3 flex flex-col gap-3">
                 <p className="text-sm font-medium text-purple-900">
                   Profile Photo <span className="text-red-500">*</span>
                 </p>

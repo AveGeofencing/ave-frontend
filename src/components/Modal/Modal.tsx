@@ -14,14 +14,19 @@ function Modal(props: {
           opacity: props.show ? "1" : "0",
         }}
       >
-        <div className="relative p-4 sm:p-6 bg-white rounded-lg dark:p-4 dark:bg-gray-900 border-2 border-black">
+        <div
+          className="
+          relative p-4 w-full sm:p-6 bg-white rounded-lg dark:bg-gray-900 border-2 border-black
+          sm:w-[400px]
+        "
+        >
           <button
             className="absolute top-6 right-6"
             onClick={props.modalClosed}
           >
             Close
           </button>
-          <div className="mt-10 sm:m-9">{props.children}</div>
+          <div className="pt-6">{props.children}</div>
         </div>
       </div>
     </>

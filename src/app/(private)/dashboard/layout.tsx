@@ -23,21 +23,27 @@ export default function RootLayout({
   return (
     <>
       <OpenModal hidden={!showLogoutModal}>
-        <div className="flex flex-col p-8 px-2 gap-12 md:gap-16 text-sm dark:bg-gray-800 dark:text-gray-300">
-          <h1 className="font-bold text-xl text-gray-700 text-center sm:text-2xl md:text-4xl dark:text-gray-400">
+        <div className="flex flex-col p-8 px-2 gap-12 md:gap-16 text-sm  dark:text-gray-300">
+          <h1 className="font-bold text-xl text-black text-center sm:text-2xl dark:text-white">
             Are you sure you want to log out?
           </h1>
           <div className={`flex gap-3 justify-center w-full md:scale-125`}>
             <>
               <button
                 onClick={handleLogout}
-                className="text-red-500 border border-red-500 px-3 py-2 rounded hover-effect hover:text-white hover:bg-red-500"
+                className="
+                  text-white bg-[var(--color-danger)] px-3 py-2 rounded hover-effect outline-none focus:border-2
+                    hover:bg-[var(--color-danger-hover)]
+                "
               >
                 Yes, leave
               </button>
               <button
                 onClick={() => updateShowLogoutModal(false)}
-                className="text-green-500 border border-green-500 px-3 py-2 rounded hover-effect hover:text-white hover:bg-green-500"
+                className="
+                  text-white bg-[var(--color-success)] px-3 py-2 rounded hover-effect 
+                  hover:text-white hover:bg-[var(--color-success-hover)]
+                "
               >
                 No, go back
               </button>

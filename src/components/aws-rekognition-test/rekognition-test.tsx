@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "@aws-amplify/ui-react/styles.css";
 import { Loader, ThemeProvider } from "@aws-amplify/ui-react";
 import {
@@ -31,22 +31,24 @@ export default function Rekognition({
   const [result, setResult] = useState<LivenessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    createSession();
-  }, []);
-
   const createSession = async () => {
+    if (!mountedRef.current) return;
     setLoading(true);
+    setError(null);
+    setResult(null);
+    setSessionId("");
     try {
       const { data, error } = await api.post<{ sessionId: string }>(
         `/rekognition/create-session`,
       );
+      if (!mountedRef.current) return;
       if (error) throw new Error(error);
       setSessionId(data!.sessionId);
     } catch (err: any) {
-      setError("Failed to create session: " + err.message);
+      if (!mountedRef.current) return;
+      setError("Failed to start liveness check session");
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   };
 
@@ -55,22 +57,52 @@ export default function Rekognition({
       const { data, error } = await api.get<LivenessResult>(
         `/rekognition/get-results/${sessionId}`,
       );
+      if (!mountedRef.current) return;
       if (error) throw new Error(error);
       setResult(data!);
       setLivenessTestSucceed(true);
       livenessTestCompletedHandler();
     } catch (err: any) {
+      if (!mountedRef.current) return;
       setLivenessTestSucceed(false);
       setError("Failed to get results: " + err.message);
     }
   };
 
+  const handleError = (err: any) => {
+    if (!mountedRef.current) return;
+
+    // "Cannot cancel a locked stream" fires when the component unmounts
+    // mid-session — it's a cleanup race, not a real user-facing error.
+    const isStreamCleanupNoise =
+      err?.message?.includes("locked") ||
+      err?.message?.includes("cancel") ||
+      err?.state === "CONNECTION_TIMEOUT";
+
+    if (isStreamCleanupNoise) return;
+
+    console.error("Liveness error:", err);
+    setLivenessTestSucceed(false);
+    setError("Error checking liveness. Please try again.");
+    livenessTestCompletedHandler();
+  };
+
   const handleRetry = () => {
-    setResult(null);
-    setError(null);
-    setSessionId("");
     createSession();
   };
+
+  // Track mount state so async callbacks don't setState after unmount
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    createSession();
+  }, []);
 
   return (
     <ThemeProvider>
@@ -121,16 +153,15 @@ export default function Rekognition({
               <Loader />
             </div>
           ) : (
-            <FaceLivenessDetectorCore
-              sessionId={sessionId}
-              region="us-east-1"
-              onAnalysisComplete={handleAnalysisComplete}
-              onError={(err: any) => {
-                console.log(err);
-                setError(`Liveness error: ${err.message}`);
-              }}
-              config={{ credentialProvider }}
-            />
+            sessionId && (
+              <FaceLivenessDetectorCore
+                sessionId={sessionId}
+                region="us-east-1"
+                onAnalysisComplete={handleAnalysisComplete}
+                onError={handleError}
+                config={{ credentialProvider }}
+              />
+            )
           ))}
       </div>
     </ThemeProvider>
