@@ -39,7 +39,7 @@ function VerifyPage() {
   const token = searchParams.get("token") || "";
 
   const [listOfColleges, setListOfColleges] = useState<CollegeData[]>([]);
-  const [isTokenVerified, setIsTokenVerified] = useState(true);
+  const [isTokenVerified, setIsTokenVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [verificationStatus, updateVerificationStatus] = useState<
     "success" | "idle" | "error"
