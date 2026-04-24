@@ -158,7 +158,7 @@ async function request<T>(
           removeToken();
 
           if (typeof window !== "undefined") {
-            window.location.href = "/";
+            window.location.href = "/login";
           } else {
             const { redirect } = await import("next/navigation");
             redirect("/");

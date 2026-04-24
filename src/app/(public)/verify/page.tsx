@@ -5,14 +5,7 @@ import { api } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 
 // --- Types ---
-interface VerifyResponse {
-  user_email: string;
-  user_id: string;
-}
-
 interface RegisterData {
-  user_id: string;
-  email: string;
   username: string;
   user_matric: string;
   password: string;
@@ -46,8 +39,6 @@ function VerifyPage() {
   >("idle");
 
   const [formData, setFormData] = useState<RegisterData>({
-    user_id: "",
-    email: "",
     username: "",
     user_matric: "",
     password: "",
@@ -135,100 +126,74 @@ function VerifyPage() {
     }, "image/jpeg");
   };
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
-  };
-
   const clearPhoto = () => {
     setPhotoFile(null);
     if (photoPreview) URL.revokeObjectURL(photoPreview);
     setPhotoPreview(null);
   };
 
-  // Attach stream to video element once it's in the DOM
-  useEffect(() => {
-    if (cameraActive && videoRef.current && streamRef.current) {
-      videoRef.current.srcObject = streamRef.current;
-    }
-  }, [cameraActive]);
-
-  // Stop camera on unmount
-  useEffect(() => () => stopCamera(), []);
-
   // --- Verification ---
   async function handleVerification(token: string) {
     updateVerificationStatus("idle");
     setLoading(true);
-    try {
-      const res = await api.post<VerifyResponse>(
-        `/auth/verify-email?token=${token}`,
-        undefined,
-        { public: true },
-      );
+    const res = await api.post<null>(
+      `/auth/verify-email?token=${token}`,
+      {},
+      { public: true },
+    );
 
-      if (!res.data) {
-        setIsTokenVerified(false);
-        updateVerificationStatus("error");
-        return;
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        email: res.data!.user_email,
-        user_id: res.data!.user_id,
-      }));
-      setIsTokenVerified(true);
-      updateVerificationStatus("success");
-    } catch {
+    // Bad path
+    if (res.error) {
       setIsTokenVerified(false);
       updateVerificationStatus("error");
-    } finally {
-      setLoading(false);
+      showToast(res.error, true);
+      return;
     }
+
+    // Happy path
+    setIsTokenVerified(true);
+    updateVerificationStatus("success");
+    setLoading(false);
   }
 
   // --- Submit ---
   const handleSubmit = async () => {
-    if (!photoFile || formData.department === null) return;
+    if (!photoFile || formData.department === null) {
+      showToast("Please complete all required fields");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const body = new FormData();
-      body.append("user_id", formData.user_id);
-      body.append("email", formData.email);
       body.append("username", formData.username);
       body.append("user_matric", formData.user_matric);
       body.append("password", formData.password);
       body.append("role", formData.role);
-      body.append("department_id", String(formData.department)); // ← only the ID goes to the backend
+      body.append("department_id", String(formData.department));
       body.append("photo_ref_upload", photoFile);
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/auth/create-user`,
         {
           method: "POST",
+          credentials: "include",
           body,
         },
       );
 
-      if (res.status === 201) {
-        router.push("/login");
+      if (!res.ok) {
+        const error: { detail: string | { msg: string }[] } = await res.json();
+        const message = Array.isArray(error.detail)
+          ? error.detail.map((e) => e.msg).join(", ")
+          : error.detail;
+        showToast(message);
         return;
       }
 
-      switch (res.status) {
-        case 409:
-          showToast("Username or matric number already taken");
-          break;
-        case 400:
-          showToast("Invalid details, please check your input");
-          break;
-        default:
-          showToast("Something went wrong, please try again");
-      }
+      showToast("Account created successfully. Redirecting...");
+      router.push("/login");
     } catch {
       showToast("Something went wrong, please try again");
     } finally {
@@ -256,8 +221,18 @@ function VerifyPage() {
     getColleges();
   }, []);
 
+  // Attach stream to video element once it's in the DOM
+  useEffect(() => {
+    if (cameraActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [cameraActive]);
+
+  // Stop camera on unmount
+  useEffect(() => () => stopCamera(), []);
+
   return (
-    <div className="min-h-screen max-w-screen px-2 sm:p-8 py-12 md:flex md:justify-center md:items-center dark:bg-gray-900">
+    <div className="min-h-screen max-w-screen px-6 sm:p-8 py-12 md:flex md:justify-center md:items-center dark:bg-gray-900">
       <div className="flex flex-col items-center md:border md:rounded-xl md:p-8 md:w-[30%]">
         {/* Mail SVG div at the top */}
         <div className="rounded-full p-4 bg-purple-100 block w-fit dark:bg-purple-800">
@@ -280,7 +255,11 @@ function VerifyPage() {
         <div className="flex flex-col justify-center items-center w-full">
           <div className="py-4 text-center">
             <h1 className="text-2xl text-purple-900 text-center font-semibold">
-              {isTokenVerified ? "Complete your profile" : "Verifying link..."}
+              {verificationStatus === "error"
+                ? isTokenVerified
+                  ? "Complete your profile"
+                  : "Link has expired"
+                : "Verifying link..."}
             </h1>
           </div>
 

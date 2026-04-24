@@ -80,6 +80,10 @@ body {
   color: var(--color-text-primary);
 }
 
+input, textarea, select {
+  font-size: 16px;
+}
+
 /* ─── Color utility classes ──────────────────────────────────────── */
 
 .bg-primary     { background-color: var(--color-bg-primary); }

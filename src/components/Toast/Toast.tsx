@@ -18,7 +18,7 @@ const Toast: React.FC<ToastProps> = ({
   duration = 5000,
 }) => {
   return (
-    <div className="fixed bottom-6 right-6 z-[2500] flex flex-col gap-2 items-end">
+    <div className="fixed top-6 right-6 z-[2500] flex flex-col gap-2 items-end">
       {toasts
         .slice()
         .reverse()
@@ -46,7 +46,7 @@ const ToastItem: React.FC<{
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg
+      className="flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg max-w-[250px] sm:max-w-fit justify-between
         bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700
         transition-all duration-300 ease-in-out opacity-100 translate-y-0"
     >
