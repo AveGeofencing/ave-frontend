@@ -91,10 +91,10 @@ export default function InitialRegisterPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="my-8">
-          <h1 className="my-2 text-3xl md:text-center dark:text-gray-200">
+          <h1 className="my-2 text-3xl md:text-center dark:text-gray-200 font-extrabold">
             Sign Up to AVE.
           </h1>
-          <p className="text-purple-600 md:text-center text-sm">
+          <p className="text-purple-600 md:text-center text-sm font-bold">
             Enter your email to get started.
           </p>
         </div>
