@@ -151,9 +151,12 @@ async function request<T>(
             credentials: "include",
             headers: await buildHeaders(false),
           });
+          if (!retryRes.ok) {
+            const retryJson = await retryRes.json().catch(() => ({}));
+            return { data: null, error: retryJson?.detail ?? "Retry failed", status: retryRes.status };
+          }
           const retryJson = await retryRes.json();
           return { data: retryJson as T, error: null, status: retryRes.status };
-
         } catch (err) {
           removeToken();
 
