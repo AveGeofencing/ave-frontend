@@ -185,8 +185,8 @@ export default function ClassPage({ fenceId }: { fenceId: string }) {
       <div id="classAttendance" className="w-full">
         <button
           onClick={getAttendanceHandler}
-          className="py-2 px-6 w-full border border-white my-3 rounded text-white bg-purple-500
-          transition ease-out duration-300 hover:bg-purple-800 dark:bg-purple-700 dark:hover:bg-purple-800 dark:text-gray-200 dark:border-gray-400"
+          className="py-2 px-6 w-full my-3 rounded text-white bg-purple-500
+          transition ease-out duration-300 hover:bg-purple-800 dark:bg-purple-700 dark:hover:bg-purple-800 dark:text-gray-200"
         >
           Refresh List
         </button>
@@ -194,7 +194,7 @@ export default function ClassPage({ fenceId }: { fenceId: string }) {
         <div className="flex justify-between">
           <button
             onClick={endClassHandler}
-            className="py-2 px-6 w-[90%] border border-purple-500 my-3 bg-white transition ease-out duration-300 hover:bg-red-600
+            className="py-2 px-6 w-[90%] rounded my-3 bg-white transition ease-out duration-300 hover:bg-red-600
             hover:text-white disabled:bg-red-500 disabled:opacity-75 disabled:text-white dark:bg-red-600 dark:text-gray-100 dark:hover:bg-red-700"
             disabled={classData.status !== "active"}
           >
@@ -206,7 +206,7 @@ export default function ClassPage({ fenceId }: { fenceId: string }) {
           </button>
 
           <button
-            className="px-4 border border-purple-500 scale-[65%]"
+            className="px-4 border rounded border-purple-500 scale-[65%]"
             title="Download Attendance"
             onClick={() => downloadCSV(classData)}
           >
@@ -235,7 +235,7 @@ export default function ClassPage({ fenceId }: { fenceId: string }) {
           </button>
         </div>
 
-        <header className="text-lg py-4 pb-0 text-purple-500 font-bold text-center">
+        <header className="text-lg py-4 pb-0 text-purple-500 font-bold text-center dark:text-white">
           ATTENDANCE LIST FOR THE CLASS
         </header>
 
@@ -246,38 +246,48 @@ export default function ClassPage({ fenceId }: { fenceId: string }) {
             {Spinner}
           </div>
         ) : (
-          <table
-            id="classAttendanceTable"
-            className="table-auto w-full text-left border-collapse"
-          >
-            <thead>
-              <tr>
-                <th className="border px-4 py-2 w-[5%]">S/N</th>
-                <th className="border px-4 py-2 w-[60%]">Name</th>
-                <th className="border px-4 py-2 w-[25%]">Matric No.</th>
-                <th className="border px-4 py-2 w-[10%]">Timestamp</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {attendanceList.length > 0 ? (
-                attendanceList.map((student, index) => (
-                  <tr key={index}>
-                    <td className="border px-4 py-2">{index + 1}</td>
-                    <td className="border px-4 py-2">{student.username}</td>
-                    <td className="border px-4 py-2">{student.user_matric}</td>
-                    <td className="border px-4 py-2">{student.timestamp}</td>
-                  </tr>
-                ))
-              ) : (
+          <div className="overflow-x-auto w-full">
+            <table
+              id="classAttendanceTable"
+              className="table-auto w-full text-left border-collapse overflow-x-auto"
+            >
+              <thead>
                 <tr>
-                  <td colSpan={4} className="text-center py-4 text-gray-500">
-                    No attendance records
-                  </td>
+                  <th className="border px-4 py-2 w-[5%]">S/N</th>
+                  <th className="border px-4 py-2 w-[40%]">Name</th>
+                  <th className="border px-4 py-2 w-[25%]">Matric No.</th>
+                  <th className="border px-4 py-2 w-[15%]">Date</th>
+                  <th className="border px-4 py-2 w-[15%]">Time</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {attendanceList.length > 0 ? (
+                  attendanceList.map((student, index) => (
+                    <tr key={student.user_matric}>
+                      <td className="border px-4 py-2">{index + 1}</td>
+                      <td className="border px-4 py-2">{student.username}</td>
+                      <td className="border px-4 py-2">
+                        {student.user_matric}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {new Date(student.timestamp).toLocaleDateString()}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {new Date(student.timestamp).toLocaleTimeString()}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="text-center py-4 text-gray-500">
+                      No attendance records
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

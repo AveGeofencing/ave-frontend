@@ -148,8 +148,8 @@ export default function Admin_dashboard() {
   return (
     <main className="min-h-screen bg-primary text-primary  w-full md:w-[800px]">
       <Modal show={classStarted} modalClosed={() => updateClassStarted(false)}>
-        <div className="flex flex-col items-center justify-center w-full py-6 px-8 gap-5 text-primary">
-          <h1 className="text-2xl font-bold text-center">Create Geofence.</h1>
+        <div className="flex flex-col items-center justify-center w-full py-6 gap-5 text-primary">
+          <h1 className="text-2xl font-bold text-center">Create Geofence</h1>
 
           <p className="text-center text-secondary">
             Your class code would be generated
@@ -161,20 +161,26 @@ export default function Admin_dashboard() {
             </div>
           ) : (
             <form className="flex flex-col items-center w-full">
+              <label htmlFor="" className="font-bold self-start">
+                Class Name
+              </label>
               <input
                 type="text"
                 name="className"
                 onChange={(e) => handleFormDataChange(e)}
-                className="input w-[130%] px-5"
+                className="input w-full px-5"
                 placeholder="Enter class name"
               />
+              <label htmlFor="" className="font-bold self-start">
+                Class size
+              </label>
               <select
                 name="radius"
                 defaultValue={20}
                 onChange={(e) => handleFormDataChange(e)}
                 onBlur={(e) => handleFormDataChange(e)}
                 id="radius"
-                className="input w-[130%]"
+                className="input w-full"
               >
                 <option value="20">Small Classroom e.g B4 (10m)</option>
                 <option value="30">Medium Classroom e.g B6 (20m)</option>
@@ -182,14 +188,16 @@ export default function Admin_dashboard() {
                 <option value="130">Extra-Large Hall e.g LT2 (100m)</option>
               </select>
 
-              <label htmlFor="start_time">Input the start time:</label>
+              <label htmlFor="start_time" className="font-bold self-start">
+                Start time
+              </label>
               <input
                 type="time"
                 name="start_time"
                 id="start_time"
                 min="05:00"
                 max="23:30"
-                className="input w-[130%]"
+                className="input w-full"
                 onChange={(e) => handleFormDataChange(e)}
                 onBlur={(e) => handleFormDataChange(e)}
               />
@@ -198,13 +206,16 @@ export default function Admin_dashboard() {
                 <p className="text-sm text-danger">Enter a valid time</p>
               )}
 
+              <label htmlFor="start_time" className="font-bold self-start">
+                Class duration
+              </label>
               <select
                 name="duration"
                 defaultValue={30}
                 onChange={(e) => handleFormDataChange(e)}
                 onBlur={(e) => handleFormDataChange(e)}
                 id="duration"
-                className="input w-[130%]"
+                className="input w-full"
               >
                 <option value="0:30">30 minutes</option>
                 <option value="1:0">1 hour</option>
@@ -250,7 +261,7 @@ export default function Admin_dashboard() {
 
             <ul className="list-disc list-inside text-left">
               <li>Start a class.</li>
-              <li>Unique class code is generated.</li>
+              <li>A unique class code is generated.</li>
               <li>Specify geofence radius.</li>
               <li>See students attendance and end session.</li>
             </ul>
@@ -271,13 +282,13 @@ export default function Admin_dashboard() {
             onClick={() => updateClassStarted(true)}
             className="w-full py-2 rounded text-white text-base font-medium bg-purple hover:opacity-90 transition-opacity"
           >
-            Start a class.
+            Start a class
           </button>
           <button
             onClick={() => getClassesCreatedByMe()}
             className="w-full py-2 rounded text-base font-bold text-purple-sec border-purple hover:opacity-90 transition-opacity"
           >
-            Get your classes.
+            Get your classes
           </button>
         </div>
 

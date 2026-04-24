@@ -16,10 +16,10 @@ function Modal(props: {
       >
         <div
           className="
-            relative flex justify-center items-center p-4 w-full
+            relative flex justify-center items-center p-4 w-full 
             h-screen sm:h-auto
-            sm:p-6 bg-white dark:bg-gray-900 border-2 border-black
-            sm:w-[600px] sm:min-h-[50%] sm:rounded-lg
+            sm:p-6 bg-white dark:bg-gray-900 
+            sm:w-[600px] sm:min-h-[50%] sm:rounded-lg sm:border sm:border-gray-500
           "
         >
           <button
@@ -41,7 +41,7 @@ function Modal(props: {
               />
             </svg>
           </button>
-          <div className="pt-6">{props.children}</div>
+          <div className="w-full sm:w-[600px]">{props.children}</div>
         </div>
       </div>
     </>

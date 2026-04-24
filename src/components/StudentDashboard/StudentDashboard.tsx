@@ -186,6 +186,13 @@ export default function StudentDashboard({
           ) : (
             <div className="relative flex flex-col items-center justify-center w-full h-full py-4 px-6 gap-5 rounded">
               <h1
+                className="text-2xl font-bold text-center 
+            dark:text-white underline"
+              >
+                {selectedGeofenceData.name}
+              </h1>
+
+              <h1
                 className="
             text-2xl font-bold text-center 
             dark:text-white
@@ -247,7 +254,7 @@ export default function StudentDashboard({
             Student Dashboard
           </h1>
 
-          <h3 className="text-center py-4">
+          <h3 className="text-center py-4 font-bold">
             Hello <span className="text-purple-500">{user?.username}</span>,
             join your class.
           </h3>
