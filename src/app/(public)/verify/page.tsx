@@ -31,6 +31,7 @@ function VerifyPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
+  const [showPassword, setShowPassword] = useState(false);
   const [listOfColleges, setListOfColleges] = useState<CollegeData[]>([]);
   const [isTokenVerified, setIsTokenVerified] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -233,7 +234,7 @@ function VerifyPage() {
 
   return (
     <div className="min-h-screen max-w-screen px-6 sm:p-8 py-12 md:flex md:justify-center md:items-center dark:bg-gray-900">
-      <div className="flex flex-col items-center md:border md:rounded-xl md:p-8 md:w-[30%]">
+      <div className="flex flex-col items-center md:border md:rounded-xl md:p-8 md:min-w-[500px]">
         {/* Mail SVG div at the top */}
         <div className="rounded-full p-4 bg-purple-100 block w-fit dark:bg-purple-800">
           <svg
@@ -254,7 +255,7 @@ function VerifyPage() {
 
         <div className="flex flex-col justify-center items-center w-full">
           <div className="py-4 text-center">
-            <h1 className="text-2xl text-purple-900 text-center font-semibold">
+            <h1 className="text-2xl text-purple-900 text-center font-bold">
               {verificationStatus === "error"
                 ? isTokenVerified
                   ? "Complete your profile"
@@ -263,92 +264,175 @@ function VerifyPage() {
             </h1>
           </div>
 
-          {isTokenVerified && (
+          {true && (
             <div className="flex flex-col gap-4 w-full">
-              <input
-                type="text"
-                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
-                placeholder="Username"
-                value={formData.username}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, username: e.target.value }))
-                }
-              />
-              <input
-                type="text"
-                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
-                placeholder="Matric Number"
-                value={formData.user_matric}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    user_matric: e.target.value,
-                  }))
-                }
-              />
-              <select
-                value={formData.role}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, role: e.target.value }))
-                }
-                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
-              >
-                <option value="" disabled>
-                  Select a role
-                </option>
-                <option value="student">Student</option>
-                <option value="admin">Teacher</option>
-              </select>
-
-              {/* College selector — UI only */}
-              <select
-                value={selectedCollegeId ?? ""}
-                onChange={handleCollegeChange}
-                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
-              >
-                <option value="" disabled>
-                  Select a college
-                </option>
-                {listOfColleges.map((college) => (
-                  <option key={college.id} value={college.id}>
-                    {college.name}
+              <div className="flex flex-col">
+                <label htmlFor="" className="font-semibold">
+                  First name and last name
+                </label>
+                <input
+                  type="text"
+                  className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
+                  placeholder="Full name"
+                  value={formData.username}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      username: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="" className="font-semibold">
+                  Matric Number or Staff number
+                </label>
+                <input
+                  type="text"
+                  className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
+                  placeholder="Matric Number"
+                  value={formData.user_matric}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      user_matric: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="" className="font-semibold">
+                  Role
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, role: e.target.value }))
+                  }
+                  className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
+                >
+                  <option value="" disabled>
+                    Select a role
                   </option>
-                ))}
-              </select>
+                  <option value="student">Student</option>
+                  <option value="admin">Lecturer</option>
+                </select>
+              </div>
 
-              {/* Department selector — sends department_id to backend */}
-              <select
-                value={formData.department ?? ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    department: Number(e.target.value),
-                  }))
-                }
-                disabled={selectedCollegeId === null}
-                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <option value="" disabled>
-                  {selectedCollegeId === null
-                    ? "Select a college first"
-                    : "Select a department"}
-                </option>
-                {availableDepartments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.name}
+              <div className="flex flex-col">
+                {/* College selector — UI only */}
+                <label htmlFor="" className="font-semibold">
+                  College
+                </label>
+
+                <select
+                  value={selectedCollegeId ?? ""}
+                  onChange={handleCollegeChange}
+                  className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
+                >
+                  <option value="" disabled>
+                    Select a college
                   </option>
-                ))}
-              </select>
+                  {listOfColleges.map((college) => (
+                    <option key={college.id} value={college.id}>
+                      {college.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col">
+                {/* Department selector — sends department_id to backend */}
+                <label htmlFor="" className="font-semibold">
+                  Department
+                </label>
 
-              <input
-                type="password"
-                className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2"
-                placeholder="Password"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, password: e.target.value }))
-                }
-              />
+                <select
+                  value={formData.department ?? ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      department: Number(e.target.value),
+                    }))
+                  }
+                  disabled={selectedCollegeId === null}
+                  className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <option value="" disabled>
+                    {selectedCollegeId === null
+                      ? "Select a college first"
+                      : "Select a department"}
+                  </option>
+                  {availableDepartments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="" className="font-semibold">
+                  Password
+                </label>
+
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="border rounded-lg h-12 border-[var(--color-input-border)] focus:outline-[var(--color-purple-primary)] p-2 w-full"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        password: e.target.value,
+                      }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? (
+                      // Eye-off icon
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"
+                        />
+                      </svg>
+                    ) : (
+                      // Eye icon
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
 
               {/* Photo capture section */}
               <div className="border rounded-lg border-[var(--color-input-border)] p-3 flex flex-col gap-3">
