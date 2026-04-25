@@ -17,7 +17,7 @@ function Modal(props: {
         <div
           className="
             relative flex justify-center items-center p-4 w-full 
-            h-screen sm:h-auto
+            h-dvh sm:h-auto
             sm:p-6 bg-white dark:bg-gray-900 
             sm:w-[600px] sm:min-h-[50%] sm:rounded-lg sm:border sm:border-gray-500
           "

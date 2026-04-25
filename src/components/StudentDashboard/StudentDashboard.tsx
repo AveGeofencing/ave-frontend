@@ -197,50 +197,56 @@ export default function StudentDashboard({
                 {selectedGeofenceData.name}
               </h1>
 
-              <h1
-                className="
-            text-2xl font-bold text-center 
-            dark:text-white
-          "
-              >
-                Enter the class fence code.
-              </h1>
-
-              {!selectedGeofenceData.has_registered ? (
-                <div>
-                  <form
-                    action=""
-                    className="flex flex-col items-center justify-center"
-                  >
-                    <input
-                      type="name"
-                      name="fenceCode"
-                      id="fence_code"
-                      value={fenceCode}
-                      onChange={(e) => setFenceCode(e.target.value)} // Set fence code value
-                      className="input w-[130%] px-5"
-                      maxLength={6}
-                      placeholder={`Enter fence code`}
-                    />
-                  </form>
-                  <div className="flex flex-row gap-2 justify-center items-center">
-                    <button
-                      onClick={handleSubmitButtonClicked}
-                      className="
-                  bg-green-700 text-white p-2 w-24 rounded-lg
-                  hover:bg-green-500 transition ease-out duration-300
-                  disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-700
-                  "
-                      disabled={attendanceBeingRecorded || fenceCode.length < 6} // Disable button while processing
-                    >
-                      {attendanceBeingRecorded ? Spinner : "Confirm"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <h1 className="text-center text-green-500 font-bold">
-                  You have already recorded attendance for this class session.
+              {!(selectedGeofenceData.status === "active") ? (
+                <h1 className="text-red-500 text-center font-bold">
+                  The selected geofence is not active for attendance marking at
+                  the moment
                 </h1>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold text-center dark:text-white">
+                    Enter the class fence code.
+                  </h1>
+
+                  {!selectedGeofenceData.has_registered ? (
+                    <div>
+                      <form
+                        action=""
+                        className="flex flex-col items-center justify-center"
+                      >
+                        <input
+                          type="text"
+                          name="fenceCode"
+                          id="fence_code"
+                          value={fenceCode}
+                          onChange={(e) => setFenceCode(e.target.value)}
+                          className="input w-[130%] px-5"
+                          maxLength={6}
+                          placeholder="Enter fence code"
+                        />
+                      </form>
+                      <div className="flex flex-row gap-2 justify-center items-center">
+                        <button
+                          onClick={handleSubmitButtonClicked}
+                          className="bg-green-700 text-white p-2 w-24 rounded-lg
+                          hover:bg-green-500 transition ease-out duration-300
+                          disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-700
+                          "
+                          disabled={
+                            attendanceBeingRecorded || fenceCode.length < 6
+                          }
+                        >
+                          {attendanceBeingRecorded ? Spinner : "Confirm"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <h1 className="text-center text-green-500 font-bold">
+                      You have already recorded attendance for this class
+                      session.
+                    </h1>
+                  )}
+                </>
               )}
             </div>
           )}
