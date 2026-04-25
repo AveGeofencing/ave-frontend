@@ -264,7 +264,7 @@ function VerifyPage() {
             </h1>
           </div>
 
-          {true && (
+          {isTokenVerified && (
             <div className="flex flex-col gap-4 w-full">
               <div className="flex flex-col">
                 <label htmlFor="" className="font-semibold">
