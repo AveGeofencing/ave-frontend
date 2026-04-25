@@ -20,11 +20,9 @@ type LivenessResult = {
 };
 
 export default function Rekognition({
-  setLivenessTestSucceed,
   livenessTestCompletedHandler,
 }: {
-  setLivenessTestSucceed: (truth: boolean) => void;
-  livenessTestCompletedHandler: () => void;
+  livenessTestCompletedHandler: (sessionId: string | null) => void;
 }) {
   const [sessionId, setSessionId] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -54,17 +52,11 @@ export default function Rekognition({
 
   const handleAnalysisComplete = async () => {
     try {
-      const { data, error } = await api.get<LivenessResult>(
-        `/rekognition/get-results/${sessionId}`,
-      );
       if (!mountedRef.current) return;
-      if (error) throw new Error(error);
-      setResult(data!);
-      setLivenessTestSucceed(true);
-      livenessTestCompletedHandler();
+      livenessTestCompletedHandler(sessionId);
     } catch (err: any) {
       if (!mountedRef.current) return;
-      setLivenessTestSucceed(false);
+      livenessTestCompletedHandler(null);
       setError("Failed to get results: " + err.message);
     }
   };
@@ -82,9 +74,9 @@ export default function Rekognition({
     if (isStreamCleanupNoise) return;
 
     console.error("Liveness error:", err);
-    setLivenessTestSucceed(false);
+    livenessTestCompletedHandler(null);
     setError("Error checking liveness. Please try again.");
-    livenessTestCompletedHandler();
+    livenessTestCompletedHandler(null);
   };
 
   const handleRetry = () => {

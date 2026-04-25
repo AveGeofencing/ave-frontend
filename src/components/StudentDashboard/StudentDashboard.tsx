@@ -32,8 +32,6 @@ export default function StudentDashboard({
   const [fenceCode, setFenceCode] = useState<string>("");
   const [gettingGeofences, setGettingGeofences] = useState(false);
   const [livenessTestStart, setLivenessTestStart] = useState<boolean>(false);
-  const [livenessTestSucceed, setLivenessTestSucceed] =
-    useState<boolean>(false);
   const [selectedGeofenceData, updateSelectedGeofenceData] = useState<Geofence>(
     {
       id: "",
@@ -96,6 +94,7 @@ export default function StudentDashboard({
   async function recordAttendanceHandler(
     fenceCode: string,
     geofence: Geofence,
+    sessionId: string,
   ) {
     setAttendanceBeingRecorded(true);
 
@@ -106,6 +105,7 @@ export default function StudentDashboard({
       lat: latitude,
       long: longitude,
       fence_code: fenceCode,
+      liveness_session_id: sessionId,
     });
 
     setAttendanceBeingRecorded(false);
@@ -151,12 +151,18 @@ export default function StudentDashboard({
     return;
   };
 
-  const livenessTestCompletedHandler = () => {
+  const livenessTestCompletedHandler = (sessionId: string | null) => {
     setLivenessTestStart(false);
 
-    if (livenessTestSucceed) {
-      showToast("Liveness test succeeded");
-      recordAttendanceHandler(fenceCode, selectedGeofenceData);
+    console.log(sessionId);
+    if (!sessionId) {
+      showToast("Liveness test failed");
+      return;
+    }
+
+    if (sessionId) {
+      showToast("Liveness test completed");
+      recordAttendanceHandler(fenceCode, selectedGeofenceData, sessionId);
       return;
     }
 
@@ -181,7 +187,6 @@ export default function StudentDashboard({
           {livenessTestStart ? (
             <Rekognition
               livenessTestCompletedHandler={livenessTestCompletedHandler}
-              setLivenessTestSucceed={setLivenessTestSucceed}
             />
           ) : (
             <div className="relative flex flex-col items-center justify-center w-full h-full py-4 px-6 gap-5 rounded">
