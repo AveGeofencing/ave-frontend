@@ -31,6 +31,9 @@ function VerifyPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
+  const [signupSessionToken, setSignupSessionToken] = useState<string | null>(
+    null,
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [listOfColleges, setListOfColleges] = useState<CollegeData[]>([]);
   const [isTokenVerified, setIsTokenVerified] = useState(false);
@@ -136,7 +139,7 @@ function VerifyPage() {
   // --- Verification ---
   async function handleVerification(token: string) {
     setLoading(true);
-    const res = await api.post<null>(
+    const res = await api.post<{signup_session_token: string}>(
       `/auth/verify-email?token=${token}`,
       {},
       { public: true },
@@ -151,6 +154,7 @@ function VerifyPage() {
     }
 
     // Happy path
+    setSignupSessionToken(res.data!.signup_session_token);
     setIsTokenVerified(true);
     updateVerificationStatus("success");
     setLoading(false);
@@ -180,6 +184,9 @@ function VerifyPage() {
           method: "POST",
           credentials: "include",
           body,
+          headers: {
+            Authorization: `Bearer ${signupSessionToken}`,
+          },
         },
       );
 
