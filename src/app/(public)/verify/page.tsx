@@ -135,7 +135,6 @@ function VerifyPage() {
 
   // --- Verification ---
   async function handleVerification(token: string) {
-    updateVerificationStatus("idle");
     setLoading(true);
     const res = await api.post<null>(
       `/auth/verify-email?token=${token}`,
@@ -233,8 +232,8 @@ function VerifyPage() {
   useEffect(() => () => stopCamera(), []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center max-w-screen px-6 sm:p-8 py-12 md:flex md:justify-center md:items-center dark:bg-gray-900">
-      <div className="flex flex-col items-center md:border md:rounded-xl md:p-8 md:min-w-[500px]">
+    <div className="min-h-screen flex items-center justify-center w-screen px-6 sm:p-8 py-12 md:flex md:justify-center md:items-center dark:bg-gray-900">
+      <div className="flex flex-col items-center w-full md:border md:rounded-xl md:p-8 md:w-[500px] md:shadow-lg">
         {/* Mail SVG div at the top */}
         <div className="rounded-full p-4 bg-purple-100 block w-fit dark:bg-purple-800">
           <svg
@@ -256,11 +255,11 @@ function VerifyPage() {
         <div className="flex flex-col justify-center items-center w-full">
           <div className="py-4 text-center">
             <h1 className="text-2xl text-purple-900 text-center font-bold">
-              {verificationStatus === "error"
-                ? isTokenVerified
+              {verificationStatus === "idle"
+                ? "Verifying link..."
+                : isTokenVerified
                   ? "Complete your profile"
-                  : "Link has expired"
-                : "Verifying link..."}
+                  : "Link has expired"}
             </h1>
           </div>
 
