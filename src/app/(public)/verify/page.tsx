@@ -233,7 +233,7 @@ function VerifyPage() {
   useEffect(() => () => stopCamera(), []);
 
   return (
-    <div className="min-h-screen max-w-screen px-6 sm:p-8 py-12 md:flex md:justify-center md:items-center dark:bg-gray-900">
+    <div className="min-h-screen flex items-center justify-center max-w-screen px-6 sm:p-8 py-12 md:flex md:justify-center md:items-center dark:bg-gray-900">
       <div className="flex flex-col items-center md:border md:rounded-xl md:p-8 md:min-w-[500px]">
         {/* Mail SVG div at the top */}
         <div className="rounded-full p-4 bg-purple-100 block w-fit dark:bg-purple-800">
