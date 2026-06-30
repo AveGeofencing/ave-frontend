@@ -1,15 +1,28 @@
-import React from "react";
+"use client";
+import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import StudentDashboard from "@/components/StudentDashboard/StudentDashboard";
 
-const Page = async () => {
-  const geofences = await api.get<GeofenceResponse>("/geofence/get_geofences");
+export default function StudentPage() {
+  const [geofences, setGeofences] = useState<BaseGeofence[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!geofences.data) {
-    return <div>Error loading geofences</div>;
-  }
+  useEffect(() => {
+    const fetchGeofences = async () => {
+      const response = await api.get<GeofenceResponse>("/geofence/get_geofences");
+      if (response.data && response.data.geofences) {
+        setGeofences(response.data.geofences);
+        setError(null);
+      } else {
+        setError("Error loading geofences");
+      }
+      setLoading(false);
+    };
+    fetchGeofences();
+  }, []);
 
-  return <StudentDashboard geofences={geofences.data?.geofences} />;
-};
-
-export default Page;
+  if (loading) return <div className="flex m-auto justify-center items-center">Loading...</div>;
+  if (error) return <div>{error}</div>;
+  return <StudentDashboard geofences={geofences} />;
+}

@@ -4,12 +4,12 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 COPY . .
 
-RUN npm run build  # Build the Next.js application
+RUN npm run build
 
 EXPOSE 3000
 
-CMD ["npx", "serve@latest", "out"]
+CMD ["npm", "start"]
